@@ -1,5 +1,5 @@
 <?php
-namespace Guzzle6\Tests\Http;
+namespace GuzzleHttp\Tests\Psr7;
 
 use GuzzleHttp\Psr7\FnStream;
 use GuzzleHttp\Psr7\Stream;
