@@ -52,7 +52,7 @@ class Utils
      *
      * @return array Returns the parsed header values.
      */
-    public static function parse_header($header)
+    public static function parseHeader($header)
     {
         static $trimmed = "\"'  \n\t\r";
         $params = $matches = [];

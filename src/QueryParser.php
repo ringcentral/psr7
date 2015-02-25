@@ -8,8 +8,6 @@ namespace GuzzleHttp\Psr7;
  * - data: Query string data
  * - duplicates: true/false if duplicate keys of the same name were present.
  * - numeric_indices: true/false if duplicate keys use numeric indices.
- *
- * @internal Use Query::fromString()
  */
 class QueryParser
 {
@@ -27,7 +25,11 @@ class QueryParser
     public function parse($str, $urlEncoding = true)
     {
         if ($str === '') {
-            return ['data' => [], 'duplicates' => false, 'numeric_indices' => false];
+            return [
+                'data'            => [],
+                'duplicates'      => false,
+                'numeric_indices' => false
+            ];
         }
 
         $result = [];
