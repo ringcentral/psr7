@@ -1,10 +1,10 @@
 all: clean test
 
 test:
-	vendor/bin/phpunit
+	vendor/bin/phpunit $(TEST)
 
 coverage:
-	vendor/bin/phpunit --coverage-html=artifacts/coverage
+	vendor/bin/phpunit --coverage-html=artifacts/coverage $(TEST)
 
 view-coverage:
 	open artifacts/coverage/index.html

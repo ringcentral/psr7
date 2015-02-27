@@ -15,12 +15,25 @@ class Uri implements UriInterface
     private static $charSubDelims = '!\$&\'\(\)\*\+,;=';
     private static $replaceQuery = ['=' => '%3D', '&' => '%26'];
 
+    /** @var string Uri scheme. */
     private $scheme = '';
+
+    /** @var string Uri user info. */
     private $userInfo = '';
+
+    /** @var string Uri host. */
     private $host = '';
+
+    /** @var int|null Uri port. */
     private $port;
+
+    /** @var string Uri path. */
     private $path = '';
+
+    /** @var string Uri query string. */
     private $query = '';
+
+    /** @var string Uri fragment. */
     private $fragment = '';
 
     /**
@@ -28,7 +41,7 @@ class Uri implements UriInterface
      */
     public function __construct($uri = '')
     {
-        if (!empty($uri)) {
+        if ($uri != null) {
             $this->applyParts(parse_url($uri));
         }
     }
@@ -38,7 +51,7 @@ class Uri implements UriInterface
         return self::createUriString(
             $this->scheme,
             $this->getAuthority(),
-            $this->getPath(), // Absolute URIs should use a "/" for an empty path
+            $this->getPath(), // Absolute URIs should use "/" for an empty path
             $this->query,
             $this->fragment
         );
@@ -287,7 +300,7 @@ class Uri implements UriInterface
 
     public function getPath()
     {
-        return empty($this->path) ? '/' : $this->path;
+        return $this->path == null ? '/' : $this->path;
     }
 
     public function getQuery()
@@ -338,10 +351,15 @@ class Uri implements UriInterface
 
     public function withPort($port)
     {
-        $port = (int) $port;
-        $new = clone $this;
-        $new->port = $port;
-        return $new;
+        if ($port === null || (is_int($port) && $port >= 1 && $port <= 65535)) {
+            $new = clone $this;
+            $new->port = $port;
+            return $new;
+        }
+
+        throw new \InvalidArgumentException(
+            'Invalid port; must be null or an integer between 1 and 65535.'
+        );
     }
 
     public function withPath($path)
@@ -437,15 +455,15 @@ class Uri implements UriInterface
             $uri .= $authority;
         }
 
-        if ($path) {
+        if ($path != null) {
             $uri .= $path;
         }
 
-        if ($query) {
+        if ($query != null) {
             $uri .= '?' . $query;
         }
 
-        if ($fragment) {
+        if ($fragment != null) {
             $uri .= '#' . $fragment;
         }
 
