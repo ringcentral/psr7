@@ -10,13 +10,7 @@ class UriTest extends \PHPUnit_Framework_TestCase
 {
     const RFC3986_BASE = "http://a/b/c/d;p?q";
 
-    public function testEmptyUrl()
-    {
-        $uri = new Uri('');
-        $this->assertEquals('/', (string) $uri);
-    }
-
-    public function testParsesProvidedUrlAnd()
+    public function testParsesProvidedUrl()
     {
         $uri = new Uri('https://michael:test@test.com:443/path/123?q=abc#test');
 
@@ -90,7 +84,7 @@ class UriTest extends \PHPUnit_Framework_TestCase
     }
 
 
-    public function testAllowsFalsyUrlParts()
+    public function testAllowsFalseyUrlParts()
     {
         $url = new Uri('http://a:1/0?0#0');
         $this->assertSame('a', $url->getHost());
@@ -101,9 +95,9 @@ class UriTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('http://a:1/0?0#0', (string) $url);
 
         $url = new Uri('');
-        $this->assertSame('/', (string) $url);
+        $this->assertSame('', (string) $url);
 
         $url = new Uri('0');
-        $this->assertSame('0', (string) $url);
+        $this->assertSame('/0', (string) $url);
     }
 }

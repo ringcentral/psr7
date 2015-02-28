@@ -51,7 +51,7 @@ class Uri implements UriInterface
         return self::createUriString(
             $this->scheme,
             $this->getAuthority(),
-            $this->getPath(), // Absolute URIs should use "/" for an empty path
+            $this->getPath(),
             $this->query,
             $this->fragment
         );
@@ -300,7 +300,7 @@ class Uri implements UriInterface
 
     public function getPath()
     {
-        return $this->path == null ? '/' : $this->path;
+        return $this->path == null ? '' : $this->path;
     }
 
     public function getQuery()
@@ -368,10 +368,6 @@ class Uri implements UriInterface
             throw new \InvalidArgumentException(
                 'Invalid path provided; must be a string'
             );
-        }
-
-        if (!empty($path) && substr($path, 0, 1) !== '/') {
-            $path = '/' . $path;
         }
 
         $new = clone $this;
@@ -508,6 +504,10 @@ class Uri implements UriInterface
      */
     private function filterPath($path)
     {
+        if ($path != null && substr($path, 0, 1) !== '/') {
+            $path = '/' . $path;
+        }
+
         return preg_replace_callback(
             '/(?:[^' . self::$charUnreserved . ':@&=\+\$,\/;%]+|%(?![A-Fa-f0-9]{2}))/',
             function ($match) { return rawurlencode($match[0]); },

@@ -76,6 +76,15 @@ class RequestTest extends \PHPUnit_Framework_TestCase
         $r1->withRequestTarget('/foo bar');
     }
 
+    public function testRequestTargetDefaultsToSlash()
+    {
+        $r1 = new Request('GET', '');
+        $this->assertEquals('/', $r1->getRequestTarget());
+
+        $r2 = new Request('GET', '0');
+        $this->assertEquals('/0', $r2->getRequestTarget());
+    }
+
     public function testBuildsRequestTarget()
     {
         $r1 = new Request('GET', 'http://foo.com/baz?bar=bam');
