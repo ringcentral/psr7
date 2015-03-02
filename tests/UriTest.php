@@ -83,7 +83,6 @@ class UriTest extends \PHPUnit_Framework_TestCase
         (new Uri(''))->withQuery(new \stdClass);
     }
 
-
     public function testAllowsFalseyUrlParts()
     {
         $url = new Uri('http://a:1/0?0#0');
@@ -99,5 +98,99 @@ class UriTest extends \PHPUnit_Framework_TestCase
 
         $url = new Uri('0');
         $this->assertSame('/0', (string) $url);
+    }
+
+    /**
+     * @dataProvider getResolveTestCases
+     */
+    public function testResolvesUris($base, $rel, $expected)
+    {
+        $uri = new Uri($base);
+        $actual = Uri::resolve($uri, $rel);
+        $this->assertEquals($expected, (string) $actual);
+    }
+
+    public function getResolveTestCases()
+    {
+        return [
+            //[self::RFC3986_BASE, 'g:h',           'g:h'],
+            [self::RFC3986_BASE, 'g',             'http://a/b/c/g'],
+            [self::RFC3986_BASE, './g',           'http://a/b/c/g'],
+            [self::RFC3986_BASE, 'g/',            'http://a/b/c/g/'],
+            [self::RFC3986_BASE, '/g',            'http://a/g'],
+            [self::RFC3986_BASE, '//g',           'http://g'],
+            [self::RFC3986_BASE, '?y',            'http://a/b/c/d;p?y'],
+            [self::RFC3986_BASE, 'g?y',           'http://a/b/c/g?y'],
+            [self::RFC3986_BASE, '#s',            'http://a/b/c/d;p?q#s'],
+            [self::RFC3986_BASE, 'g#s',           'http://a/b/c/g#s'],
+            [self::RFC3986_BASE, 'g?y#s',         'http://a/b/c/g?y#s'],
+            [self::RFC3986_BASE, ';x',            'http://a/b/c/;x'],
+            [self::RFC3986_BASE, 'g;x',           'http://a/b/c/g;x'],
+            [self::RFC3986_BASE, 'g;x?y#s',       'http://a/b/c/g;x?y#s'],
+            [self::RFC3986_BASE, '',              self::RFC3986_BASE],
+            [self::RFC3986_BASE, '.',             'http://a/b/c/'],
+            [self::RFC3986_BASE, './',            'http://a/b/c/'],
+            [self::RFC3986_BASE, '..',            'http://a/b/'],
+            [self::RFC3986_BASE, '../',           'http://a/b/'],
+            [self::RFC3986_BASE, '../g',          'http://a/b/g'],
+            [self::RFC3986_BASE, '../..',         'http://a/'],
+            [self::RFC3986_BASE, '../../',        'http://a/'],
+            [self::RFC3986_BASE, '../../g',       'http://a/g'],
+            [self::RFC3986_BASE, '../../../g',    'http://a/g'],
+            [self::RFC3986_BASE, '../../../../g', 'http://a/g'],
+            [self::RFC3986_BASE, '/./g',          'http://a/g'],
+            [self::RFC3986_BASE, '/../g',         'http://a/g'],
+            [self::RFC3986_BASE, 'g.',            'http://a/b/c/g.'],
+            [self::RFC3986_BASE, '.g',            'http://a/b/c/.g'],
+            [self::RFC3986_BASE, 'g..',           'http://a/b/c/g..'],
+            [self::RFC3986_BASE, '..g',           'http://a/b/c/..g'],
+            [self::RFC3986_BASE, './../g',        'http://a/b/g'],
+            [self::RFC3986_BASE, 'foo////g',      'http://a/b/c/foo////g'],
+            [self::RFC3986_BASE, './g/.',         'http://a/b/c/g/'],
+            [self::RFC3986_BASE, 'g/./h',         'http://a/b/c/g/h'],
+            [self::RFC3986_BASE, 'g/../h',        'http://a/b/c/h'],
+            [self::RFC3986_BASE, 'g;x=1/./y',     'http://a/b/c/g;x=1/y'],
+            [self::RFC3986_BASE, 'g;x=1/../y',    'http://a/b/c/y'],
+            //[self::RFC3986_BASE, 'http:g',        'http:g'],
+        ];
+    }
+
+    public function testAddAndRemoveQueryValues()
+    {
+        $uri = new Uri('http://foo.com/bar');
+        $uri = Uri::withQueryValue($uri, 'a', 'b');
+        $uri = Uri::withQueryValue($uri, 'c', 'd');
+        $uri = Uri::withQueryValue($uri, 'e', null);
+        $this->assertEquals('a=b&c=d&e', $uri->getQuery());
+
+        $uri = Uri::withoutQueryValue($uri, 'c');
+        $uri = Uri::withoutQueryValue($uri, 'e');
+        $this->assertEquals('a=b', $uri->getQuery());
+        $uri = Uri::withoutQueryValue($uri, 'a');
+        $uri = Uri::withoutQueryValue($uri, 'a');
+        $this->assertEquals('', $uri->getQuery());
+    }
+
+    public function testGetAuthorityReturnsCorrectPort()
+    {
+        // HTTPS non-standard port
+        $uri = new Uri('https://foo.co:99');
+        $this->assertEquals('foo.co:99', $uri->getAuthority());
+
+        // HTTP non-standard port
+        $uri = new Uri('http://foo.co:99');
+        $this->assertEquals('foo.co:99', $uri->getAuthority());
+
+        // No scheme
+        $uri = new Uri('foo.co:99');
+        $this->assertEquals('foo.co:99', $uri->getAuthority());
+
+        // No host or port
+        $uri = new Uri('http:');
+        $this->assertEquals('', $uri->getAuthority());
+
+        // No host or port
+        $uri = new Uri('http://foo.co');
+        $this->assertEquals('foo.co', $uri->getAuthority());
     }
 }

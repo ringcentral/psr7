@@ -172,6 +172,8 @@ class Uri implements UriInterface
             }
         } elseif (!empty($relParts['query'])) {
             $parts['query'] = $relParts['query'];
+        } elseif ($relParts['fragment'] != null) {
+            $parts['fragment'] = $relParts['fragment'];
         }
 
         return static::fromParts($parts);
