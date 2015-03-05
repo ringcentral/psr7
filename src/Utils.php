@@ -339,4 +339,64 @@ class Utils
 
         return $buffer;
     }
+
+    /**
+     * Parse a query string into an associative array.
+     *
+     * If multiple values are found for the same key, the value of that key
+     * value pair will become an array. This function does not parse nested
+     * PHP style arrays into an associative array (e.g., foo[a]=1&foo[b]=2 will
+     * be parsed into ['foo[a]' => '1', 'foo[b]' => '2']).
+     *
+     * @param string      $str         Query string to parse
+     * @param bool|string $urlEncoding How the query string is encoded
+     *
+     * @return array
+     */
+    public static function parseQuery($str, $urlEncoding = true)
+    {
+        $result = [];
+
+        if ($str !== '') {
+            $decoder = self::getQueryDecoder($urlEncoding);
+            foreach (explode('&', $str) as $kvp) {
+                $parts = explode('=', $kvp, 2);
+                $key = $decoder($parts[0]);
+                $value = isset($parts[1]) ? $decoder($parts[1]) : null;
+                if (!isset($result[$key])) {
+                    $result[$key] = $value;
+                } else {
+                    if (!is_array($result[$key])) {
+                        $result[$key] = [$result[$key]];
+                    }
+                    $result[$key][] = $value;
+                }
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * Returns a callable that is used to URL decode query keys and values.
+     *
+     * @param string|bool $type One of true, false, PHP_QUERY_RFC3986, and
+     *                          PHP_QUERY_RFC1738.
+     *
+     * @return callable|string
+     */
+    private static function getQueryDecoder($type)
+    {
+        if ($type === true) {
+            return function ($value) {
+                return rawurldecode(str_replace('+', ' ', $value));
+            };
+        } elseif ($type == PHP_QUERY_RFC3986) {
+            return 'rawurldecode';
+        } elseif ($type == PHP_QUERY_RFC1738) {
+            return 'urldecode';
+        } else {
+            return function ($str) { return $str; };
+        }
+    }
 }
