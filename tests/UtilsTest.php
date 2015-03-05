@@ -196,6 +196,40 @@ class UtilsTest extends \PHPUnit_Framework_TestCase
         $this->assertSame($output, $result);
     }
 
+    public function testDoesNotDecode()
+    {
+        $str = 'foo%20=bar';
+        $data = Utils::parseQuery($str, false);
+        $this->assertEquals(['foo%20' => 'bar'], $data);
+    }
+
+    /**
+     * @dataProvider parseQueryProvider
+     */
+    public function testParsesAndBuildsQueries($input, $output)
+    {
+        $result = Utils::parseQuery($input, false);
+        $this->assertSame($input, Utils::buildQuery($result, false));
+    }
+
+    public function testEncodesWithRfc1738()
+    {
+        $str = Utils::buildQuery(['foo bar' => 'baz+'], PHP_QUERY_RFC1738);
+        $this->assertEquals('foo+bar=baz%2B', $str);
+    }
+
+    public function testEncodesWithRfc3986()
+    {
+        $str = Utils::buildQuery(['foo bar' => 'baz+'], PHP_QUERY_RFC3986);
+        $this->assertEquals('foo%20bar=baz%2B', $str);
+    }
+
+    public function testDoesNotEncode()
+    {
+        $str = Utils::buildQuery(['foo bar' => 'baz+'], false);
+        $this->assertEquals('foo bar=baz+', $str);
+    }
+
     public function testCanControlDecodingType()
     {
         $result = Utils::parseQuery('var=foo+bar', PHP_QUERY_RFC3986);
