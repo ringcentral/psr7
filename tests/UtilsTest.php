@@ -237,4 +237,44 @@ class UtilsTest extends \PHPUnit_Framework_TestCase
         $result = Utils::parseQuery('var=foo+bar', PHP_QUERY_RFC1738);
         $this->assertEquals('foo bar', $result['var']);
     }
+
+    public function testParsesRequestMessages()
+    {
+        $req = "GET /abc HTTP/1.0\r\nHost: foo.com\r\nFoo: Bar\r\nBaz: Bam\r\nBaz: Qux\r\n\r\nTest";
+        $request = Utils::parseRequest($req);
+        $this->assertEquals('/abc', $request->getRequestTarget());
+        $this->assertEquals('1.0', $request->getProtocolVersion());
+        $this->assertEquals('foo.com', $request->getHeader('Host'));
+        $this->assertEquals('Bar', $request->getHeader('Foo'));
+        $this->assertEquals('Bam, Qux', $request->getHeader('Baz'));
+        $this->assertEquals('Test', (string) $request->getBody());
+    }
+
+    /**
+     * @expectedException \InvalidArgumentException
+     */
+    public function testValidatesRequestMessages()
+    {
+        Utils::parseRequest("HTTP/1.1 200 OK\r\n\r\n");
+    }
+
+    public function testParsesResponseMessages()
+    {
+        $res = "HTTP/1.0 200 OK\r\nFoo: Bar\r\nBaz: Bam\r\nBaz: Qux\r\n\r\nTest";
+        $response = Utils::parseResponse($res);
+        $this->assertEquals(200, $response->getStatusCode());
+        $this->assertEquals('OK', $response->getReasonPhrase());
+        $this->assertEquals('1.0', $response->getProtocolVersion());
+        $this->assertEquals('Bar', $response->getHeader('Foo'));
+        $this->assertEquals('Bam, Qux', $response->getHeader('Baz'));
+        $this->assertEquals('Test', (string) $response->getBody());
+    }
+
+    /**
+     * @expectedException \InvalidArgumentException
+     */
+    public function testValidatesResponseMessages()
+    {
+        Utils::parseResponse("GET / HTTP/1.1\r\n\r\n");
+    }
 }

@@ -18,8 +18,14 @@ class ResponseTest extends \PHPUnit_Framework_TestCase
 
     public function testCanGiveCustomReason()
     {
-        $r = new Response(200, [], null, 'bar');
+        $r = new Response(200, [], null, '1.1', 'bar');
         $this->assertEquals('bar', $r->getReasonPhrase());
+    }
+
+    public function testCanGiveCustomProtocolVersion()
+    {
+        $r = new Response(200, [], null, '1000');
+        $this->assertEquals('1000', $r->getProtocolVersion());
     }
 
     public function testCanCreateNewResponseWithStatusAndNoReason()

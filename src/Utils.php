@@ -341,6 +341,55 @@ class Utils
     }
 
     /**
+     * Parses a request message string into a request object.
+     *
+     * @param string $message Request message string.
+     *
+     * @return Request
+     */
+    public static function parseRequest($message)
+    {
+        $data = self::parseMessage($message);
+        if (!preg_match('/^[a-zA-Z]+\s+\/.*/', $data['start-line'])) {
+            throw new \InvalidArgumentException('Invalid request string');
+        }
+        $parts = explode(' ', $data['start-line'], 3);
+        $version = isset($parts[2]) ? explode('/', $parts[2])[1] : '1.1';
+
+        return new Request(
+            $parts[0],
+            $parts[1],
+            $data['headers'],
+            $data['body'],
+            $version
+        );
+    }
+
+    /**
+     * Parses a response message string into a response object.
+     *
+     * @param string $message Response message string.
+     *
+     * @return Response
+     */
+    public static function parseResponse($message)
+    {
+        $data = self::parseMessage($message);
+        if (!preg_match('/^HTTP\/.* [0-9]{3} .*/', $data['start-line'])) {
+            throw new \InvalidArgumentException('Invalid response string');
+        }
+        $parts = explode(' ', $data['start-line'], 3);
+
+        return new Response(
+            $parts[1],
+            $data['headers'],
+            $data['body'],
+            explode('/', $parts[0])[1],
+            isset($parts[2]) ? $parts[2] : null
+        );
+    }
+
+    /**
      * Parse a query string into an associative array.
      *
      * If multiple values are found for the same key, the value of that key
@@ -455,5 +504,47 @@ class Utils
         } else {
             throw new \InvalidArgumentException('Invalid type');
         }
+    }
+
+    /**
+     * Parses an HTTP message into an associative array.
+     *
+     * The array contains the "start-line" key containing the start line of
+     * the message, "headers" key containing an associative array of header
+     * array values, and a "body" key containing the body of the message.
+     *
+     * @param string $message HTTP request or response to parse.
+     *
+     * @return array
+     */
+    private static function parseMessage($message)
+    {
+        if (!$message) {
+            throw new \InvalidArgumentException('Invalid message');
+        }
+
+        // Iterate over each line in the message, accounting for line endings
+        $lines = preg_split('/(\\r?\\n)/', $message, -1, PREG_SPLIT_DELIM_CAPTURE);
+        $result = ['start-line' => array_shift($lines), 'headers' => [], 'body' => ''];
+        array_shift($lines);
+
+        for ($i = 0, $totalLines = count($lines); $i < $totalLines; $i += 2) {
+            $line = $lines[$i];
+            // If two line breaks were encountered, then this is the end of body
+            if (empty($line)) {
+                if ($i < $totalLines - 1) {
+                    $result['body'] = implode('', array_slice($lines, $i + 2));
+                }
+                break;
+            }
+            if (strpos($line, ':')) {
+                $parts = explode(':', $line, 2);
+                $key = trim($parts[0]);
+                $value = isset($parts[1]) ? trim($parts[1]) : '';
+                $result['headers'][$key][] = $value;
+            }
+        }
+
+        return $result;
     }
 }

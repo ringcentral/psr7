@@ -81,12 +81,14 @@ class Response implements ResponseInterface
      * @param int    $status  Status code for the response, if any.
      * @param array  $headers Headers for the response, if any.
      * @param mixed  $body    Stream body.
+     * @param string $version Protocol version.
      * @param string $reason  Reason phrase (a default will be used if possible).
      */
     public function __construct(
         $status = 200,
         array $headers = [],
         $body = null,
+        $version = '1.1',
         $reason = null
     ) {
         $this->statusCode = (int) $status;
@@ -101,6 +103,8 @@ class Response implements ResponseInterface
         } else {
             $this->reasonPhrase = (string) $reason;
         }
+
+        $this->protocol = $version;
     }
 
     public function getStatusCode()
