@@ -90,4 +90,29 @@ class RequestTest extends \PHPUnit_Framework_TestCase
         $r1 = new Request('GET', 'http://foo.com/baz?bar=bam');
         $this->assertEquals('/baz?bar=bam', $r1->getRequestTarget());
     }
+
+    public function testHostIsAddedFirst()
+    {
+        $r = new Request('GET', 'http://foo.com/baz?bar=bam', ['Foo' => 'Bar']);
+        $this->assertEquals([
+            'Host' => ['foo.com'],
+            'Foo'  => ['Bar']
+        ], $r->getHeaders());
+    }
+
+    public function testHardSetHostIsNotOverwrittenBySoftSet()
+    {
+        $r = new Request('GET', 'http://foo.com/baz?bar=bam', ['Host' => 'a.com']);
+        $this->assertEquals(['Host' => ['a.com']], $r->getHeaders());
+        $r2 = $r->withUri(new Uri('http://www.foo.com/bar'));
+        $this->assertEquals('a.com', $r2->getHeader('Host'));
+    }
+
+    public function testOverridesSoftHostWithUri()
+    {
+        $r = new Request('GET', 'http://foo.com/baz?bar=bam');
+        $this->assertEquals(['Host' => ['foo.com']], $r->getHeaders());
+        $r2 = $r->withUri(new Uri('http://www.baz.com/bar'));
+        $this->assertEquals('www.baz.com', $r2->getHeader('Host'));
+    }
 }

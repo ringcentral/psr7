@@ -11,7 +11,9 @@ use Psr\Http\Message\UriInterface;
  */
 class Request implements RequestInterface
 {
-    use MessageTrait;
+    use MessageTrait {
+        withHeader as withParentHeader;
+    }
 
     /** @var string */
     private $method;
@@ -21,6 +23,9 @@ class Request implements RequestInterface
 
     /** @var null|UriInterface */
     private $uri;
+
+    /** @var bool */
+    private $softHost = false;
 
     /**
      * @param null|string $uri URI for the request.
@@ -112,12 +117,32 @@ class Request implements RequestInterface
         return $new;
     }
 
+    public function withHeader($header, $value)
+    {
+        /** @var Request $newInstance */
+        $newInstance = $this->withParentHeader($header, $value);
+        if ($newInstance->softHost && strtolower($header) === 'host') {
+            // If explicitly setting a Host header, then it isn't "soft".
+            $newInstance->softHost = false;
+        }
+
+        return $newInstance;
+    }
+
     private function updateHostFromUri()
     {
+        if (!$this->softHost && $this->hasHeader('Host')) {
+            return;
+        }
+
         // Set a default host header if one is not present.
         if ($host = $this->uri->getHost()) {
+            // Mark as a soft header so it can be overridden by withUri().
+            $this->softHost = true;
             $this->headerNames['host'] = 'Host';
-            $this->headers['host'] = [$host];
+            // Ensure Host is the first header.
+            // See: http://tools.ietf.org/html/rfc7230#section-5.4
+            $this->headers = ['host' => [$host]] + $this->headers;
         }
     }
 }
