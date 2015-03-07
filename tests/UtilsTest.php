@@ -242,12 +242,26 @@ class UtilsTest extends \PHPUnit_Framework_TestCase
     {
         $req = "GET /abc HTTP/1.0\r\nHost: foo.com\r\nFoo: Bar\r\nBaz: Bam\r\nBaz: Qux\r\n\r\nTest";
         $request = Utils::parseRequest($req);
+        $this->assertEquals('GET', $request->getMethod());
         $this->assertEquals('/abc', $request->getRequestTarget());
         $this->assertEquals('1.0', $request->getProtocolVersion());
         $this->assertEquals('foo.com', $request->getHeader('Host'));
         $this->assertEquals('Bar', $request->getHeader('Foo'));
         $this->assertEquals('Bam, Qux', $request->getHeader('Baz'));
         $this->assertEquals('Test', (string) $request->getBody());
+        $this->assertEquals('http://foo.com/abc', (string) $request->getUri());
+    }
+
+    public function testParsesRequestMessagesWithHttpsScheme()
+    {
+        $req = "PUT /abc?baz=bar HTTP/1.1\r\nHost: foo.com:443\r\n\r\n";
+        $request = Utils::parseRequest($req);
+        $this->assertEquals('PUT', $request->getMethod());
+        $this->assertEquals('/abc?baz=bar', $request->getRequestTarget());
+        $this->assertEquals('1.1', $request->getProtocolVersion());
+        $this->assertEquals('foo.com:443', $request->getHeader('Host'));
+        $this->assertEquals('', (string) $request->getBody());
+        $this->assertEquals('https://foo.com/abc?baz=bar', (string) $request->getUri());
     }
 
     /**

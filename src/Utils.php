@@ -358,7 +358,7 @@ class Utils
 
         return new Request(
             $parts[0],
-            $parts[1],
+            self::parseRequestUri($parts[1], $data['headers']),
             $data['headers'],
             $data['body'],
             $version
@@ -546,5 +546,30 @@ class Utils
         }
 
         return $result;
+    }
+
+    /**
+     * Constructs a URI for an HTTP request message.
+     *
+     * @param string $path    Path from the start-line
+     * @param array  $headers Array of headers (each value an array).
+     *
+     * @return string
+     */
+    private static function parseRequestUri($path, array $headers)
+    {
+        $hostKey = array_filter(array_keys($headers), function ($k) {
+            return strtolower($k) === 'host';
+        });
+
+        // If no host is found, then a full URI cannot be constructed.
+        if (!$hostKey) {
+            return $path;
+        }
+
+        $host = $headers[$hostKey[0]][0];
+        $scheme = substr($host, -4) === ':443' ? 'https' : 'http';
+
+        return $scheme . '://' . $host . '/' . ltrim($path, '/');
     }
 }
