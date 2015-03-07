@@ -42,7 +42,11 @@ class Uri implements UriInterface
     public function __construct($uri = '')
     {
         if ($uri != null) {
-            $this->applyParts(parse_url($uri));
+            $parts = parse_url($uri);
+            if ($parts === false) {
+                throw new \InvalidArgumentException("Unable to parse URI: $uri");
+            }
+            $this->applyParts($parts);
         }
     }
 

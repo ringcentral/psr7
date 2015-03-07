@@ -29,6 +29,15 @@ class UriTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('michael:test', $uri->getUserInfo());
     }
 
+    /**
+     * @expectedException \InvalidArgumentException
+     * @expectedExceptionMessage Unable to parse URI
+     */
+    public function testValidatesUriCanBeParsed()
+    {
+        new Uri('///');
+    }
+
     public function testCanTransformAndRetrievePartsIndividually()
     {
         $uri = (new Uri(''))
