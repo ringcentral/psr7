@@ -8,11 +8,11 @@ use Psr\Http\Message\StreamableInterface;
  */
 trait MessageTrait
 {
-    /** @var array HTTP header collection */
+    /** @var array Cached HTTP header collection with lowercase key to values */
     private $headers = [];
 
-    /** @var array mapping a lowercase header name to its name over the wire */
-    private $headerNames = [];
+    /** @var array Actual key to list of values per header. */
+    private $headerLines = [];
 
     /** @var string */
     private $protocol = '1.1';
@@ -34,12 +34,7 @@ trait MessageTrait
 
     public function getHeaders()
     {
-        $headers = [];
-        foreach ($this->headers as $name => $values) {
-            $headers[$this->headerNames[$name]] = $values;
-        }
-
-        return $headers;
+        return $this->headerLines;
     }
 
     public function hasHeader($header)
@@ -67,16 +62,24 @@ trait MessageTrait
         $new = clone $this;
         $header = trim($header);
         $name = strtolower($header);
-        $new->headerNames[$name] = $header;
 
         if (!is_array($value)) {
             $new->headers[$name] = [trim($value)];
         } else {
-            foreach ($value as &$v) {
-                $v = trim($v);
+            foreach ($value as $v) {
+                $new->headers[$name][] = trim($v);
             }
-            $new->headers[$name] = $value;
         }
+
+        // Remove the header lines.
+        foreach (array_keys($new->headerLines) as $key) {
+            if (strtolower($key) === $name) {
+                unset($new->headerLines[$key]);
+            }
+        }
+
+        // Add the header line.
+        $new->headerLines[$header] = $new->headers[$name];
 
         return $new;
     }
@@ -101,7 +104,14 @@ trait MessageTrait
 
         $new = clone $this;
         $name = strtolower($header);
-        unset($new->headers[$name], $new->headerNames[$name]);
+        unset($new->headers[$name]);
+
+        foreach (array_keys($new->headerLines) as $key) {
+            if (strtolower($key) === $name) {
+                unset($new->headerLines[$key]);
+            }
+        }
+
         return $new;
     }
 
@@ -123,17 +133,20 @@ trait MessageTrait
 
     private function setHeaders(array $headers)
     {
+        $this->headerLines = $this->headers = [];
         foreach ($headers as $header => $value) {
             $header = trim($header);
             $name = strtolower($header);
-            $this->headerNames[$name] = $header;
             if (!is_array($value)) {
-                $this->headers[$name] = [trim($value)];
+                $value = trim($value);
+                $this->headers[$name][] = $value;
+                $this->headerLines[$header][] = $value;
             } else {
-                foreach ($value as &$v) {
+                foreach ($value as $v) {
                     $v = trim($v);
+                    $this->headers[$name][] = $v;
+                    $this->headerLines[$header][] = $v;
                 }
-                $this->headers[$name] = $value;
             }
         }
     }

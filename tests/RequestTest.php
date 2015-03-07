@@ -115,4 +115,13 @@ class RequestTest extends \PHPUnit_Framework_TestCase
         $r2 = $r->withUri(new Uri('http://www.baz.com/bar'));
         $this->assertEquals('www.baz.com', $r2->getHeader('Host'));
     }
+
+    public function testAggregatesHeaders()
+    {
+        $r = new Request('GET', 'http://foo.com', [
+            'ZOO' => 'zoobar',
+            'zoo' => ['foobar', 'zoobar']
+        ]);
+        $this->assertEquals('zoobar, foobar, zoobar', $r->getHeader('zoo'));
+    }
 }

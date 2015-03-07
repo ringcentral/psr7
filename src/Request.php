@@ -139,9 +139,9 @@ class Request implements RequestInterface
         if ($host = $this->uri->getHost()) {
             // Mark as a soft header so it can be overridden by withUri().
             $this->softHost = true;
-            $this->headerNames['host'] = 'Host';
             // Ensure Host is the first header.
             // See: http://tools.ietf.org/html/rfc7230#section-5.4
+            $this->headerLines = ['Host' => [$host]] + $this->headerLines;
             $this->headers = ['host' => [$host]] + $this->headers;
         }
     }
