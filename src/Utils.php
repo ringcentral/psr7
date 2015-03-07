@@ -567,7 +567,7 @@ class Utils
             return $path;
         }
 
-        $host = $headers[$hostKey[0]][0];
+        $host = $headers[reset($hostKey)][0];
         $scheme = substr($host, -4) === ':443' ? 'https' : 'http';
 
         return $scheme . '://' . $host . '/' . ltrim($path, '/');

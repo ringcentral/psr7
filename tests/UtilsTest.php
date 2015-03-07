@@ -264,6 +264,15 @@ class UtilsTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('https://foo.com/abc?baz=bar', (string) $request->getUri());
     }
 
+    public function testParsesRequestMessagesWithUriWhenHostIsNotFirst()
+    {
+        $req = "PUT / HTTP/1.1\r\nFoo: Bar\r\nHost: foo.com\r\n\r\n";
+        $request = Utils::parseRequest($req);
+        $this->assertEquals('PUT', $request->getMethod());
+        $this->assertEquals('/', $request->getRequestTarget());
+        $this->assertEquals('http://foo.com/', (string) $request->getUri());
+    }
+
     /**
      * @expectedException \InvalidArgumentException
      */
