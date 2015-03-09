@@ -1,9 +1,9 @@
 <?php
 namespace GuzzleHttp\Tests\Psr7;
 
+use GuzzleHttp\Psr7;
 use GuzzleHttp\Psr7\Stream;
 use GuzzleHttp\Psr7\CachingStream;
-use GuzzleHttp\Psr7\Utils;
 
 /**
  * @covers GuzzleHttp\Psr7\CachingStream
@@ -94,26 +94,26 @@ class CachingStreamTest extends \PHPUnit_Framework_TestCase
 
         $body = new CachingStream($decorated);
 
-        $this->assertEquals("0000\n", Utils::readline($body));
-        $this->assertEquals("0001\n", Utils::readline($body));
+        $this->assertEquals("0000\n", Psr7\readline($body));
+        $this->assertEquals("0001\n", Psr7\readline($body));
         // Write over part of the body yet to be read, so skip some bytes
         $this->assertEquals(5, $body->write("TEST\n"));
         $this->assertEquals(5, $this->readAttribute($body, 'skipReadBytes'));
         // Read, which skips bytes, then reads
-        $this->assertEquals("0003\n", Utils::readline($body));
+        $this->assertEquals("0003\n", Psr7\readline($body));
         $this->assertEquals(0, $this->readAttribute($body, 'skipReadBytes'));
-        $this->assertEquals("0004\n", Utils::readline($body));
-        $this->assertEquals("0005\n", Utils::readline($body));
+        $this->assertEquals("0004\n", Psr7\readline($body));
+        $this->assertEquals("0005\n", Psr7\readline($body));
 
         // Overwrite part of the cached body (so don't skip any bytes)
         $body->seek(5);
         $this->assertEquals(5, $body->write("ABCD\n"));
         $this->assertEquals(0, $this->readAttribute($body, 'skipReadBytes'));
-        $this->assertEquals("TEST\n", Utils::readline($body));
-        $this->assertEquals("0003\n", Utils::readline($body));
-        $this->assertEquals("0004\n", Utils::readline($body));
-        $this->assertEquals("0005\n", Utils::readline($body));
-        $this->assertEquals("0006\n", Utils::readline($body));
+        $this->assertEquals("TEST\n", Psr7\readline($body));
+        $this->assertEquals("0003\n", Psr7\readline($body));
+        $this->assertEquals("0004\n", Psr7\readline($body));
+        $this->assertEquals("0005\n", Psr7\readline($body));
+        $this->assertEquals("0006\n", Psr7\readline($body));
         $this->assertEquals(5, $body->write("1234\n"));
         $this->assertEquals(5, $this->readAttribute($body, 'skipReadBytes'));
 

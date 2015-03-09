@@ -21,6 +21,7 @@
     "autoload": {
         "psr-4": {
             "GuzzleHttp\\Psr7\\": "src/"
-        }
+        },
+        "files": ["src/functions.php"]
     }
 }

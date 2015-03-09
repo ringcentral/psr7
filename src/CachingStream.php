@@ -43,7 +43,7 @@ class CachingStream implements StreamableInterface
 
     /**
      * {@inheritdoc}
-     * @throws SeekException When seeking with SEEK_END or when seeking
+     * @throws \RuntimeException When seeking with SEEK_END or when seeking
      *     past the total size of the buffer stream
      */
     public function seek($offset, $whence = SEEK_SET)

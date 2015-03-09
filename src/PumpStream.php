@@ -50,7 +50,7 @@ class PumpStream implements StreamableInterface
 
     public function __toString()
     {
-        return Utils::copyToString($this);
+        return copy_to_string($this);
     }
 
     public function close()
