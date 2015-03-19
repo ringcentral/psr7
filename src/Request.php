@@ -28,10 +28,10 @@ class Request implements RequestInterface
     private $softHost = false;
 
     /**
-     * @param null|string $uri URI for the request.
      * @param null|string $method HTTP method for the request.
-     * @param string|resource|StreamableInterface $body Message body.
+     * @param null|string $uri URI for the request.
      * @param array  $headers Headers for the message.
+     * @param string|resource|StreamableInterface $body Message body.
      * @param string $protocolVersion HTTP protocol version.
      *
      * @throws InvalidArgumentException for an invalid URI
