@@ -300,4 +300,17 @@ class FunctionsTest extends \PHPUnit_Framework_TestCase
     {
         Psr7\parse_response("GET / HTTP/1.1\r\n\r\n");
     }
+
+    public function testDetermineMimetype()
+    {
+        $this->assertNull(Psr7\mimetype_from_extension('not-a-real-extension'));
+        $this->assertEquals(
+            'application/json',
+            Psr7\mimetype_from_extension('json')
+        );
+        $this->assertEquals(
+            'image/jpeg',
+            Psr7\mimetype_from_filename('/tmp/images/IMG034821.JPEG')
+        );
+    }
 }
