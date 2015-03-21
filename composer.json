@@ -15,7 +15,7 @@
         "php": ">=5.4.0"
     },
     "require-dev": {
-        "phpunit/phpunit": "~4.0",
+        "phpunit/phpunit": "^4.0",
         "psr/http-message": "^0.9"
     },
     "autoload": {
@@ -23,5 +23,10 @@
             "GuzzleHttp\\Psr7\\": "src/"
         },
         "files": ["src/functions.php"]
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "0.1-dev"
+        }
     }
 }
