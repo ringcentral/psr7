@@ -136,7 +136,15 @@ function modify_request(RequestInterface $request, array $changes)
         $headers = $changes['set_headers'] + $headers;
     }
 
-    $uri = isset($changes['uri']) ? $changes['uri'] : $request->getUri();
+    if (!isset($changes['uri'])) {
+        $uri = $request->getUri();
+    } else {
+        if ($host = $changes['uri']->getHost()) {
+            unset($headers['host'], $headers['Host']);
+        }
+        $uri = $changes['uri'];
+    }
+
     if (isset($changes['query'])) {
         $uri = $uri->withQuery($changes['query']);
     }

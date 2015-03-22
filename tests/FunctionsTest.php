@@ -313,4 +313,14 @@ class FunctionsTest extends \PHPUnit_Framework_TestCase
             Psr7\mimetype_from_filename('/tmp/images/IMG034821.JPEG')
         );
     }
+
+    public function testCanModifyRequestWithUri()
+    {
+        $r1 = new Psr7\Request('GET', 'http://foo.com');
+        $r2 = Psr7\modify_request($r1, [
+            'uri' => new Psr7\Uri('http://www.foo.com')
+        ]);
+        $this->assertEquals('http://www.foo.com', (string) $r2->getUri());
+        $this->assertEquals('www.foo.com', (string) $r2->getHeader('host'));
+    }
 }
