@@ -59,6 +59,13 @@ class RequestTest extends \PHPUnit_Framework_TestCase
         $this->assertSame($u1, $r1->getUri());
     }
 
+    public function testSameInstanceWhenSameUri()
+    {
+        $r1 = new Request('GET', 'http://foo.com');
+        $r2 = $r1->withUri($r1->getUri());
+        $this->assertSame($r1, $r2);
+    }
+
     public function testWithRequestTarget()
     {
         $r1 = new Request('GET', '/');

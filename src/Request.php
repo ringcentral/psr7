@@ -111,6 +111,10 @@ class Request implements RequestInterface
 
     public function withUri(UriInterface $uri)
     {
+        if ($uri === $this->uri) {
+            return $this;
+        }
+
         $new = clone $this;
         $new->uri = $uri;
         $new->updateHostFromUri();
