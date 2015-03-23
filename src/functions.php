@@ -5,6 +5,7 @@ use Psr\Http\Message\MessageInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamableInterface;
+use Psr\Http\Message\UriInterface;
 
 /**
  * Returns the string representation of an HTTP message.
@@ -35,6 +36,80 @@ function str(MessageInterface $message)
     }
 
     return "{$msg}\r\n\r\n" . $message->getBody();
+}
+
+/**
+ * Returns a UriInterface for the given value.
+ *
+ * @param string|UriInterface $uri
+ * @return UriInterface
+ * @throws \InvalidArgumentException
+ */
+function uri_for($uri)
+{
+    if ($uri instanceof UriInterface) {
+        return $uri;
+    } elseif (is_string($uri)) {
+        return new Uri($uri);
+    }
+
+    throw new \InvalidArgumentException('URI must be a string or UriInterface');
+}
+
+/**
+ * Create a new stream based on the input type.
+ *
+ * Options is an associative array that can contain the following keys:
+ * - metadata: Array of custom metadata.
+ * - size: Size of the stream.
+ *
+ * @param resource|string|StreamableInterface $resource Entity body data
+ * @param array                           $options  Additional options
+ *
+ * @return Stream
+ * @throws \InvalidArgumentException if the $resource arg is not valid.
+ */
+function stream_for($resource = '', array $options = [])
+{
+    $type = gettype($resource);
+
+    if ($type == 'string') {
+        $stream = fopen('php://temp', 'r+');
+        if ($resource !== '') {
+            fwrite($stream, $resource);
+            fseek($stream, 0);
+        }
+        return new Stream($stream, $options);
+    }
+
+    if ($type == 'resource') {
+        return new Stream($resource, $options);
+    }
+
+    if ($resource instanceof StreamableInterface) {
+        return $resource;
+    }
+
+    if ($type == 'object' && method_exists($resource, '__toString')) {
+        return stream_for((string) $resource, $options);
+    }
+
+    if (is_callable($resource)) {
+        return new PumpStream($resource, $options);
+    }
+
+    if ($resource instanceof \Iterator) {
+        return new PumpStream(function () use ($resource) {
+            if (!$resource->valid()) {
+                return false;
+            }
+            $result = $resource->current();
+            $resource->next();
+            return $result;
+        }, $options);
+    }
+
+    throw new \InvalidArgumentException('Invalid resource type: ' . $type);
 }
 
 /**

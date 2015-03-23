@@ -323,4 +323,103 @@ class FunctionsTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('http://www.foo.com', (string) $r2->getUri());
         $this->assertEquals('www.foo.com', (string) $r2->getHeader('host'));
     }
+
+    public function testCreatesUriForValue()
+    {
+        $this->assertInstanceOf('GuzzleHttp\Psr7\Uri', Psr7\uri_for('/foo'));
+        $this->assertInstanceOf(
+            'GuzzleHttp\Psr7\Uri',
+            Psr7\uri_for(new Psr7\Uri('/foo'))
+        );
+    }
+
+    /**
+     * @expectedException \InvalidArgumentException
+     */
+    public function testValidatesUri()
+    {
+        Psr7\uri_for([]);
+    }
+
+    public function testKeepsPositionOfResource()
+    {
+        $h = fopen(__FILE__, 'r');
+        fseek($h, 10);
+        $stream = Psr7\stream_for($h);
+        $this->assertEquals(10, $stream->tell());
+        $stream->close();
+    }
+
+    public function testCreatesWithFactory()
+    {
+        $stream = Psr7\stream_for('foo');
+        $this->assertInstanceOf('GuzzleHttp\Psr7\Stream', $stream);
+        $this->assertEquals('foo', $stream->getContents());
+        $stream->close();
+    }
+
+    public function testFactoryCreatesFromEmptyString()
+    {
+        $s = Psr7\stream_for();
+        $this->assertInstanceOf('GuzzleHttp\Psr7\Stream', $s);
+    }
+
+    public function testFactoryCreatesFromResource()
+    {
+        $r = fopen(__FILE__, 'r');
+        $s = Psr7\stream_for($r);
+        $this->assertInstanceOf('GuzzleHttp\Psr7\Stream', $s);
+        $this->assertSame(file_get_contents(__FILE__), (string) $s);
+    }
+
+    public function testFactoryCreatesFromObjectWithToString()
+    {
+        $r = new HasToString();
+        $s = Psr7\stream_for($r);
+        $this->assertInstanceOf('GuzzleHttp\Psr7\Stream', $s);
+        $this->assertEquals('foo', (string) $s);
+    }
+
+    public function testCreatePassesThrough()
+    {
+        $s = Psr7\stream_for('foo');
+        $this->assertSame($s, Stream::factory($s));
+    }
+
+    /**
+     * @expectedException \InvalidArgumentException
+     */
+    public function testThrowsExceptionForUnknown()
+    {
+        Psr7\stream_for(new \stdClass());
+    }
+
+    public function testReturnsCustomMetadata()
+    {
+        $s = Psr7\stream_for('foo', ['metadata' => ['hwm' => 3]]);
+        $this->assertEquals(3, $s->getMetadata('hwm'));
+        $this->assertArrayHasKey('hwm', $s->getMetadata());
+    }
+
+    public function testCanSetSize()
+    {
+        $s = Psr7\stream_for('', ['size' => 10]);
+        $this->assertEquals(10, $s->getSize());
+    }
+
+    public function testCanCreateIteratorBasedStream()
+    {
+        $a = new \ArrayIterator(['foo', 'bar', '123']);
+        $p = Psr7\stream_for($a);
+        $this->assertInstanceOf('GuzzleHttp\Psr7\PumpStream', $p);
+        $this->assertEquals('foo', $p->read(3));
+        $this->assertFalse($p->eof());
+        $this->assertEquals('b', $p->read(1));
+        $this->assertEquals('a', $p->read(1));
+        $this->assertEquals('r12', $p->read(3));
+        $this->assertFalse($p->eof());
+        $this->assertEquals('3', $p->getContents());
+        $this->assertTrue($p->eof());
+        $this->assertEquals(9, $p->tell());
+    }
 }

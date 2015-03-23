@@ -117,16 +117,7 @@ class StreamTest extends \PHPUnit_Framework_TestCase
         $stream->close();
     }
 
-    public function testKeepsPositionOfResource()
-    {
-        $h = fopen(__FILE__, 'r');
-        fseek($h, 10);
-        $stream = Stream::factory($h);
-        $this->assertEquals(10, $stream->tell());
-        $stream->close();
-    }
-
-    public function testCanDetachAndAttachStream()
+    public function testCanDetachStream()
     {
         $r = fopen('php://temp', 'w+');
         $stream = new Stream($r);
@@ -160,79 +151,6 @@ class StreamTest extends \PHPUnit_Framework_TestCase
         $this->assertFalse($stream->isReadable());
         $this->assertFalse($stream->isWritable());
         $this->assertNull($stream->getSize());
-    }
-
-    public function testCreatesWithFactory()
-    {
-        $stream = Stream::factory('foo');
-        $this->assertInstanceOf('GuzzleHttp\Psr7\Stream', $stream);
-        $this->assertEquals('foo', $stream->getContents());
-        $stream->close();
-    }
-
-    public function testFactoryCreatesFromEmptyString()
-    {
-        $s = Stream::factory();
-        $this->assertInstanceOf('GuzzleHttp\Psr7\Stream', $s);
-    }
-
-    public function testFactoryCreatesFromResource()
-    {
-        $r = fopen(__FILE__, 'r');
-        $s = Stream::factory($r);
-        $this->assertInstanceOf('GuzzleHttp\Psr7\Stream', $s);
-        $this->assertSame(file_get_contents(__FILE__), (string) $s);
-    }
-
-    public function testFactoryCreatesFromObjectWithToString()
-    {
-        $r = new HasToString();
-        $s = Stream::factory($r);
-        $this->assertInstanceOf('GuzzleHttp\Psr7\Stream', $s);
-        $this->assertEquals('foo', (string) $s);
-    }
-
-    public function testCreatePassesThrough()
-    {
-        $s = Stream::factory('foo');
-        $this->assertSame($s, Stream::factory($s));
-    }
-
-    /**
-     * @expectedException \InvalidArgumentException
-     */
-    public function testThrowsExceptionForUnknown()
-    {
-        Stream::factory(new \stdClass());
-    }
-
-    public function testReturnsCustomMetadata()
-    {
-        $s = Stream::factory('foo', ['metadata' => ['hwm' => 3]]);
-        $this->assertEquals(3, $s->getMetadata('hwm'));
-        $this->assertArrayHasKey('hwm', $s->getMetadata());
-    }
-
-    public function testCanSetSize()
-    {
-        $s = Stream::factory('', ['size' => 10]);
-        $this->assertEquals(10, $s->getSize());
-    }
-
-    public function testCanCreateIteratorBasedStream()
-    {
-        $a = new \ArrayIterator(['foo', 'bar', '123']);
-        $p = Stream::factory($a);
-        $this->assertInstanceOf('GuzzleHttp\Psr7\PumpStream', $p);
-        $this->assertEquals('foo', $p->read(3));
-        $this->assertFalse($p->eof());
-        $this->assertEquals('b', $p->read(1));
-        $this->assertEquals('a', $p->read(1));
-        $this->assertEquals('r12', $p->read(3));
-        $this->assertFalse($p->eof());
-        $this->assertEquals('3', $p->getContents());
-        $this->assertTrue($p->eof());
-        $this->assertEquals(9, $p->tell());
     }
 }
 
