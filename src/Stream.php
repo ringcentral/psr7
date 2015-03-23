@@ -33,23 +33,6 @@ class Stream implements StreamableInterface
     ];
 
     /**
-     * Create a new stream based on the input type.
-     *
-     * This factory accepts the same associative array of options as described
-     * in the constructor.
-     *
-     * @param resource|string|StreamableInterface $resource Entity body data
-     * @param array                           $options  Additional options
-     *
-     * @return Stream
-     * @throws \InvalidArgumentException if the $resource arg is not valid.
-     */
-    public static function factory($resource = '', array $options = [])
-    {
-        return stream_for($resource, $options);
-    }
-
-    /**
      * This constructor accepts an associative array of options.
      *
      * - size: (int) If a read stream would otherwise have an indeterminate

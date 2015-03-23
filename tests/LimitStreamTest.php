@@ -1,6 +1,7 @@
 <?php
 namespace GuzzleHttp\Tests\Psr7;
 
+use GuzzleHttp\Psr7;
 use GuzzleHttp\Psr7\FnStream;
 use GuzzleHttp\Psr7\Stream;
 use GuzzleHttp\Psr7\LimitStream;
@@ -19,13 +20,13 @@ class LimitStreamTest extends \PHPUnit_Framework_TestCase
 
     public function setUp()
     {
-        $this->decorated = Stream::factory(fopen(__FILE__, 'r'));
+        $this->decorated = Psr7\stream_for(fopen(__FILE__, 'r'));
         $this->body = new LimitStream($this->decorated, 10, 3);
     }
 
     public function testReturnsSubset()
     {
-        $body = new LimitStream(Stream::factory('foo'), -1, 1);
+        $body = new LimitStream(Psr7\stream_for('foo'), -1, 1);
         $this->assertEquals('oo', (string) $body);
         $this->assertTrue($body->eof());
         $body->seek(0);
@@ -37,14 +38,14 @@ class LimitStreamTest extends \PHPUnit_Framework_TestCase
 
     public function testReturnsSubsetWhenCastToString()
     {
-        $body = Stream::factory('foo_baz_bar');
+        $body = Psr7\stream_for('foo_baz_bar');
         $limited = new LimitStream($body, 3, 4);
         $this->assertEquals('baz', (string) $limited);
     }
 
     public function testReturnsSubsetOfEmptyBodyWhenCastToString()
     {
-        $body = Stream::factory('');
+        $body = Psr7\stream_for('');
         $limited = new LimitStream($body, 0, 10);
         $this->assertEquals('', (string) $limited);
     }
@@ -90,7 +91,7 @@ class LimitStreamTest extends \PHPUnit_Framework_TestCase
      */
     public function testThrowsWhenCurrentGreaterThanOffsetSeek()
     {
-        $a = Stream::factory('foo_bar');
+        $a = Psr7\stream_for('foo_bar');
         $b = new NoSeekStream($a);
         $c = new LimitStream($b);
         $a->getContents();
@@ -111,7 +112,7 @@ class LimitStreamTest extends \PHPUnit_Framework_TestCase
 
     public function testGetContentsIsBasedOnSubset()
     {
-        $body = new LimitStream(Stream::factory('foobazbar'), 3, 3);
+        $body = new LimitStream(Psr7\stream_for('foobazbar'), 3, 3);
         $this->assertEquals('baz', $body->getContents());
     }
 
@@ -127,7 +128,7 @@ class LimitStreamTest extends \PHPUnit_Framework_TestCase
 
     public function testLengthLessOffsetWhenNoLimitSize()
     {
-        $a = Stream::factory('foo_bar');
+        $a = Psr7\stream_for('foo_bar');
         $b = new LimitStream($a, -1, 4);
         $this->assertEquals(3, $b->getSize());
     }

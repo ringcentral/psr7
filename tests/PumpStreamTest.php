@@ -3,7 +3,7 @@ namespace GuzzleHttp\Tests\Psr7;
 
 use GuzzleHttp\Psr7\LimitStream;
 use GuzzleHttp\Psr7\PumpStream;
-use GuzzleHttp\Psr7\Stream;
+use GuzzleHttp\Psr7;
 
 class PumpStreamTest extends \PHPUnit_Framework_TestCase
 {
@@ -21,7 +21,7 @@ class PumpStreamTest extends \PHPUnit_Framework_TestCase
 
     public function testCanReadFromCallable()
     {
-        $p = Stream::factory(function ($size) {
+        $p = Psr7\stream_for(function ($size) {
             return 'a';
         });
         $this->assertEquals('a', $p->read(1));
@@ -33,7 +33,7 @@ class PumpStreamTest extends \PHPUnit_Framework_TestCase
     public function testStoresExcessDataInBuffer()
     {
         $called = [];
-        $p = Stream::factory(function ($size) use (&$called) {
+        $p = Psr7\stream_for(function ($size) use (&$called) {
             $called[] = $size;
             return 'abcdef';
         });
@@ -46,14 +46,14 @@ class PumpStreamTest extends \PHPUnit_Framework_TestCase
 
     public function testInifiniteStreamWrappedInLimitStream()
     {
-        $p = Stream::factory(function () { return 'a'; });
+        $p = Psr7\stream_for(function () { return 'a'; });
         $s = new LimitStream($p, 5);
         $this->assertEquals('aaaaa', (string) $s);
     }
 
     public function testDescribesCapabilities()
     {
-        $p = Stream::factory(function () {});
+        $p = Psr7\stream_for(function () {});
         $this->assertTrue($p->isReadable());
         $this->assertFalse($p->isSeekable());
         $this->assertFalse($p->isWritable());

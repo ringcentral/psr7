@@ -2,7 +2,6 @@
 namespace GuzzleHttp\Tests\Psr7;
 
 use GuzzleHttp\Psr7;
-use GuzzleHttp\Psr7\Stream;
 use GuzzleHttp\Psr7\CachingStream;
 
 /**
@@ -18,7 +17,7 @@ class CachingStreamTest extends \PHPUnit_Framework_TestCase
 
     public function setUp()
     {
-        $this->decorated = Stream::factory('testing');
+        $this->decorated = Psr7\stream_for('testing');
         $this->body = new CachingStream($this->decorated);
     }
 
@@ -30,7 +29,7 @@ class CachingStreamTest extends \PHPUnit_Framework_TestCase
 
     public function testUsesRemoteSizeIfPossible()
     {
-        $body = Stream::factory('test');
+        $body = Psr7\stream_for('test');
         $caching = new CachingStream($body);
         $this->assertEquals(4, $caching->getSize());
     }
@@ -51,7 +50,7 @@ class CachingStreamTest extends \PHPUnit_Framework_TestCase
 
     public function testRewindUsesSeek()
     {
-        $a = Stream::factory('foo');
+        $a = Psr7\stream_for('foo');
         $d = $this->getMockBuilder('GuzzleHttp\Psr7\CachingStream')
             ->setMethods(array('seek'))
             ->setConstructorArgs(array($a))
@@ -86,7 +85,7 @@ class CachingStreamTest extends \PHPUnit_Framework_TestCase
 
     public function testSkipsOverwrittenBytes()
     {
-        $decorated = Stream::factory(
+        $decorated = Psr7\stream_for(
             implode("\n", array_map(function ($n) {
                 return str_pad($n, 4, '0', STR_PAD_LEFT);
             }, range(0, 25)))
@@ -128,7 +127,7 @@ class CachingStreamTest extends \PHPUnit_Framework_TestCase
     public function testClosesBothStreams()
     {
         $s = fopen('php://temp', 'r');
-        $a = Stream::factory($s);
+        $a = Psr7\stream_for($s);
         $d = new CachingStream($a);
         $d->close();
         $this->assertFalse(is_resource($s));

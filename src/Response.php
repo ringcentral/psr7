@@ -94,7 +94,7 @@ class Response implements ResponseInterface
         $this->statusCode = (int) $status;
 
         if ($body) {
-            $this->stream = Stream::factory($body);
+            $this->stream = stream_for($body);
         }
 
         $this->setHeaders($headers);

@@ -34,6 +34,6 @@ class LazyOpenStream implements StreamableInterface
      */
     protected function createStream()
     {
-        return Stream::factory(try_fopen($this->filename, $this->mode));
+        return stream_for(try_fopen($this->filename, $this->mode));
     }
 }

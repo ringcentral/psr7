@@ -2,7 +2,7 @@
 namespace GuzzleHttp\Tests\Psr7;
 
 use GuzzleHttp\Psr7\StreamWrapper;
-use GuzzleHttp\Psr7\Stream;
+use GuzzleHttp\Psr7;
 
 /**
  * @covers GuzzleHttp\Psr7\StreamWrapper
@@ -11,7 +11,7 @@ class StreamWrapperTest extends \PHPUnit_Framework_TestCase
 {
     public function testResource()
     {
-        $stream = Stream::factory('foo');
+        $stream = Psr7\stream_for('foo');
         $handle = StreamWrapper::getResource($stream);
         $this->assertSame('foo', fread($handle, 3));
         $this->assertSame(3, ftell($handle));

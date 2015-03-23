@@ -1,7 +1,7 @@
 <?php
 namespace GuzzleHttp\Tests\Psr7;
 
-use GuzzleHttp\Psr7\Stream;
+use GuzzleHttp\Psr7;
 use GuzzleHttp\Psr7\FnStream;
 
 /**
@@ -50,7 +50,7 @@ class FnStreamTest extends \PHPUnit_Framework_TestCase
 
     public function testDecoratesStream()
     {
-        $a = Stream::factory('foo');
+        $a = Psr7\stream_for('foo');
         $b = FnStream::decorate($a, []);
         $this->assertEquals(3, $b->getSize());
         $this->assertEquals($b->isWritable(), true);
@@ -77,7 +77,7 @@ class FnStreamTest extends \PHPUnit_Framework_TestCase
     public function testDecoratesWithCustomizations()
     {
         $called = false;
-        $a = Stream::factory('foo');
+        $a = Psr7\stream_for('foo');
         $b = FnStream::decorate($a, [
             'read' => function ($len) use (&$called, $a) {
                 $called = true;

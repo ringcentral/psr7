@@ -1,7 +1,7 @@
 <?php
 namespace GuzzleHttp\Tests\Psr7;
 
-use GuzzleHttp\Psr7\Stream;
+use GuzzleHttp\Psr7;
 use GuzzleHttp\Psr7\NoSeekStream;
 
 /**
@@ -24,7 +24,7 @@ class NoSeekStreamTest extends \PHPUnit_Framework_TestCase
 
     public function testHandlesClose()
     {
-        $s = Stream::factory('foo');
+        $s = Psr7\stream_for('foo');
         $wrapped = new NoSeekStream($s);
         $wrapped->close();
         $this->assertFalse($wrapped->write('foo'));

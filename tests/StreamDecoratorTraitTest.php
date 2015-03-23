@@ -2,7 +2,7 @@
 namespace GuzzleHttp\Tests\Psr7;
 
 use Psr\Http\Message\StreamableInterface;
-use GuzzleHttp\Psr7\Stream;
+use GuzzleHttp\Psr7;
 use GuzzleHttp\Psr7\StreamDecoratorTrait;
 
 class Str implements StreamableInterface
@@ -24,7 +24,7 @@ class StreamDecoratorTraitTest extends \PHPUnit_Framework_TestCase
         $this->c = fopen('php://temp', 'r+');
         fwrite($this->c, 'foo');
         fseek($this->c, 0);
-        $this->a = Stream::factory($this->c);
+        $this->a = Psr7\stream_for($this->c);
         $this->b = new Str($this->a);
     }
 

@@ -58,7 +58,7 @@ class Request implements RequestInterface
         $this->updateHostFromUri();
 
         if ($body) {
-            $this->stream = Stream::factory($body);
+            $this->stream = stream_for($body);
         }
     }
 

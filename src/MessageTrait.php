@@ -118,7 +118,7 @@ trait MessageTrait
     public function getBody()
     {
         if (!$this->stream) {
-            $this->stream = Stream::factory('');
+            $this->stream = stream_for('');
         }
 
         return $this->stream;
