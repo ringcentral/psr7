@@ -145,6 +145,9 @@ class Request implements RequestInterface
             $this->softHost = true;
             // Ensure Host is the first header.
             // See: http://tools.ietf.org/html/rfc7230#section-5.4
+            if ($port = $this->uri->getPort()) {
+                $host .= ':' . $port;
+            }
             $this->headerLines = ['Host' => [$host]] + $this->headerLines;
             $this->headers = ['host' => [$host]] + $this->headers;
         }

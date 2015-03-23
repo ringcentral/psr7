@@ -131,4 +131,17 @@ class RequestTest extends \PHPUnit_Framework_TestCase
         ]);
         $this->assertEquals('zoobar, foobar, zoobar', $r->getHeader('zoo'));
     }
+
+    public function testAddsPortToHeader()
+    {
+        $r = new Request('GET', 'http://foo.com:8124/bar');
+        $this->assertEquals('foo.com:8124', $r->getHeader('host'));
+    }
+
+    public function testAddsPortToHeaderAndReplacePreviousPort()
+    {
+        $r = new Request('GET', 'http://foo.com:8124/bar');
+        $r = $r->withUri(new Uri('http://foo.com:8125/bar'));
+        $this->assertEquals('foo.com:8125', $r->getHeader('host'));
+    }
 }
