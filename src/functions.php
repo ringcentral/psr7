@@ -71,45 +71,41 @@ function uri_for($uri)
  */
 function stream_for($resource = '', array $options = [])
 {
-    $type = gettype($resource);
-
-    if ($type == 'string') {
-        $stream = fopen('php://temp', 'r+');
-        if ($resource !== '') {
-            fwrite($stream, $resource);
-            fseek($stream, 0);
-        }
-        return new Stream($stream, $options);
-    }
-
-    if ($type == 'resource') {
-        return new Stream($resource, $options);
-    }
-
-    if ($resource instanceof StreamableInterface) {
-        return $resource;
-    }
-
-    if ($type == 'object' && method_exists($resource, '__toString')) {
-        return stream_for((string) $resource, $options);
+    switch (gettype($resource)) {
+        case 'string':
+            $stream = fopen('php://temp', 'r+');
+            if ($resource !== '') {
+                fwrite($stream, $resource);
+                fseek($stream, 0);
+            }
+            return new Stream($stream, $options);
+        case 'resource':
+            return new Stream($resource, $options);
+        case 'object':
+            if ($resource instanceof StreamableInterface) {
+                return $resource;
+            } elseif ($resource instanceof \Iterator) {
+                return new PumpStream(function () use ($resource) {
+                    if (!$resource->valid()) {
+                        return false;
+                    }
+                    $result = $resource->current();
+                    $resource->next();
+                    return $result;
+                }, $options);
+            } elseif (method_exists($resource, '__toString')) {
+                return stream_for((string) $resource, $options);
+            }
+            break;
+        case 'NULL':
+            return new Stream(fopen('php://temp', 'r+'), $options);
     }
 
     if (is_callable($resource)) {
         return new PumpStream($resource, $options);
     }
 
-    if ($resource instanceof \Iterator) {
-        return new PumpStream(function () use ($resource) {
-            if (!$resource->valid()) {
-                return false;
-            }
-            $result = $resource->current();
-            $resource->next();
-            return $result;
-        }, $options);
-    }
-
-    throw new \InvalidArgumentException('Invalid resource type: ' . $type);
+    throw new \InvalidArgumentException('Invalid resource type: ' . gettype($resource));
 }
 
 /**
