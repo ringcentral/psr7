@@ -1,6 +1,7 @@
 <?php
 namespace GuzzleHttp\Psr7;
 
+use Psr\Http\Message\MessageInterface;
 use Psr\Http\Message\StreamableInterface;
 
 /**
@@ -27,6 +28,10 @@ trait MessageTrait
 
     public function withProtocolVersion($version)
     {
+        if ($this->protocol === $version) {
+            return $this;
+        }
+
         $new = clone $this;
         $new->protocol = $version;
         return $new;
@@ -86,14 +91,14 @@ trait MessageTrait
 
     public function withAddedHeader($header, $value)
     {
-        if (is_array($value)) {
-            $current = array_merge($this->getHeaderLines($header), $value);
-        } else {
-            $current = $this->getHeaderLines($header);
-            $current[] = (string) $value;
+        if (!$this->hasHeader($header)) {
+            return $this->withHeader($header, $value);
         }
 
-        return $this->withHeader($header, $current);
+        $new = clone $this;
+        $new->headers[strtolower($header)][] = $value;
+        $new->headerLines[$header][] = $value;
+        return $new;
     }
 
     public function withoutHeader($header)
@@ -126,6 +131,10 @@ trait MessageTrait
 
     public function withBody(StreamableInterface $body)
     {
+        if ($body === $this->stream) {
+            return $this;
+        }
+
         $new = clone $this;
         $new->stream = $body;
         return $new;

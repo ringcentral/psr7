@@ -2,6 +2,7 @@
 namespace GuzzleHttp\Tests\Psr7;
 
 use GuzzleHttp\Psr7\Response;
+use GuzzleHttp\Psr7;
 
 /**
  * @covers GuzzleHttp\Psr7\MessageTrait
@@ -75,5 +76,64 @@ class ResponseTest extends \PHPUnit_Framework_TestCase
         ]);
         $this->assertEquals('baz, bar', $r->getHeader('foo'));
         $this->assertEquals(['baz', 'bar'], $r->getHeaderLines('foo'));
+    }
+
+    public function testSameInstanceWhenSameBody()
+    {
+        $r = new Response(200, [], 'foo');
+        $b = $r->getBody();
+        $this->assertSame($r, $r->withBody($b));
+    }
+
+    public function testNewInstanceWhenNewBody()
+    {
+        $r = new Response(200, [], 'foo');
+        $b2 = Psr7\stream_for('abc');
+        $this->assertNotSame($r, $r->withBody($b2));
+    }
+
+    public function testSameInstanceWhenSameProtocol()
+    {
+        $r = new Response(200);
+        $this->assertSame($r, $r->withProtocolVersion('1.1'));
+    }
+
+    public function testNewInstanceWhenNewProtocol()
+    {
+        $r = new Response(200);
+        $this->assertNotSame($r, $r->withProtocolVersion('1.0'));
+    }
+
+    public function testNewInstanceWhenRemovingHeader()
+    {
+        $r = new Response(200, ['Foo' => 'Bar']);
+        $r2 = $r->withoutHeader('Foo');
+        $this->assertNotSame($r, $r2);
+        $this->assertFalse($r2->hasHeader('foo'));
+    }
+
+    public function testNewInstanceWhenAddingHeader()
+    {
+        $r = new Response(200, ['Foo' => 'Bar']);
+        $r2 = $r->withAddedHeader('Foo', 'Baz');
+        $this->assertNotSame($r, $r2);
+        $this->assertEquals('Bar, Baz', $r2->getHeader('foo'));
+    }
+
+    public function testNewInstanceWhenAddingHeaderThatWasNotThereBefore()
+    {
+        $r = new Response(200, ['Foo' => 'Bar']);
+        $r2 = $r->withAddedHeader('Baz', 'Bam');
+        $this->assertNotSame($r, $r2);
+        $this->assertEquals('Bam', $r2->getHeader('Baz'));
+        $this->assertEquals('Bar', $r2->getHeader('Foo'));
+    }
+
+    public function testRemovesPreviouslyAddedHeaderOfDifferentCase()
+    {
+        $r = new Response(200, ['Foo' => 'Bar']);
+        $r2 = $r->withHeader('foo', 'Bam');
+        $this->assertNotSame($r, $r2);
+        $this->assertEquals('Bam', $r2->getHeader('Foo'));
     }
 }
