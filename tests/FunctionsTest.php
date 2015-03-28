@@ -313,16 +313,6 @@ class FunctionsTest extends \PHPUnit_Framework_TestCase
         );
     }
 
-    public function testCanModifyRequestWithUri()
-    {
-        $r1 = new Psr7\Request('GET', 'http://foo.com');
-        $r2 = Psr7\modify_request($r1, [
-            'uri' => new Psr7\Uri('http://www.foo.com')
-        ]);
-        $this->assertEquals('http://www.foo.com', (string) $r2->getUri());
-        $this->assertEquals('www.foo.com', (string) $r2->getHeader('host'));
-    }
-
     public function testCreatesUriForValue()
     {
         $this->assertInstanceOf('GuzzleHttp\Psr7\Uri', Psr7\uri_for('/foo'));
@@ -360,6 +350,12 @@ class FunctionsTest extends \PHPUnit_Framework_TestCase
     public function testFactoryCreatesFromEmptyString()
     {
         $s = Psr7\stream_for();
+        $this->assertInstanceOf('GuzzleHttp\Psr7\Stream', $s);
+    }
+
+    public function testFactoryCreatesFromNull()
+    {
+        $s = Psr7\stream_for(null);
         $this->assertInstanceOf('GuzzleHttp\Psr7\Stream', $s);
     }
 
@@ -420,5 +416,153 @@ class FunctionsTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('3', $p->getContents());
         $this->assertTrue($p->eof());
         $this->assertEquals(9, $p->tell());
+    }
+
+    public function testConvertsRequestsToStrings()
+    {
+        $request = new Psr7\Request('PUT', 'http://foo.com/hi?123', [
+            'Baz' => 'bar',
+            'Qux' => ' ipsum'
+        ], 'hello', '1.0');
+        $this->assertEquals(
+            "PUT /hi?123 HTTP/1.0\r\nHost: foo.com\r\nBaz: bar\r\nQux: ipsum\r\n\r\nhello",
+            Psr7\str($request)
+        );
+    }
+
+    public function testConvertsResponsesToStrings()
+    {
+        $response = new Psr7\Response(200, [
+            'Baz' => 'bar',
+            'Qux' => ' ipsum'
+        ], 'hello', '1.0', 'FOO');
+        $this->assertEquals(
+            "HTTP/1.0 200 FOO\r\nBaz: bar\r\nQux: ipsum\r\n\r\nhello",
+            Psr7\str($response)
+        );
+    }
+
+    public function parseParamsProvider()
+    {
+        $res1 = array(
+            array(
+                '<http:/.../front.jpeg>',
+                'rel' => 'front',
+                'type' => 'image/jpeg',
+            ),
+            array(
+                '<http://.../back.jpeg>',
+                'rel' => 'back',
+                'type' => 'image/jpeg',
+            ),
+        );
+        return array(
+            array(
+                '<http:/.../front.jpeg>; rel="front"; type="image/jpeg", <http://.../back.jpeg>; rel=back; type="image/jpeg"',
+                $res1
+            ),
+            array(
+                '<http:/.../front.jpeg>; rel="front"; type="image/jpeg",<http://.../back.jpeg>; rel=back; type="image/jpeg"',
+                $res1
+            ),
+            array(
+                'foo="baz"; bar=123, boo, test="123", foobar="foo;bar"',
+                array(
+                    array('foo' => 'baz', 'bar' => '123'),
+                    array('boo'),
+                    array('test' => '123'),
+                    array('foobar' => 'foo;bar')
+                )
+            ),
+            array(
+                '<http://.../side.jpeg?test=1>; rel="side"; type="image/jpeg",<http://.../side.jpeg?test=2>; rel=side; type="image/jpeg"',
+                array(
+                    array('<http://.../side.jpeg?test=1>', 'rel' => 'side', 'type' => 'image/jpeg'),
+                    array('<http://.../side.jpeg?test=2>', 'rel' => 'side', 'type' => 'image/jpeg')
+                )
+            ),
+            array(
+                '',
+                array()
+            )
+        );
+    }
+    /**
+     * @dataProvider parseParamsProvider
+     */
+    public function testParseParams($header, $result)
+    {
+        $this->assertEquals($result, Psr7\parse_header($header));
+    }
+
+    public function testParsesArrayHeaders()
+    {
+        $header = ['a, b', 'c', 'd, e'];
+        $this->assertEquals(['a', 'b', 'c', 'd', 'e'], Psr7\normalize_header($header));
+    }
+
+    public function testRewindsBody()
+    {
+        $body = Psr7\stream_for('abc');
+        $res = new Psr7\Response(200, [], $body);
+        Psr7\rewind_body($res);
+        $this->assertEquals(0, $body->tell());
+        $body->rewind(1);
+        Psr7\rewind_body($res);
+        $this->assertEquals(0, $body->tell());
+    }
+
+    /**
+     * @expectedException \RuntimeException
+     */
+    public function testThrowsWhenBodyCannotBeRewound()
+    {
+        $body = Psr7\stream_for('abc');
+        $body->read(1);
+        $body = FnStream::decorate($body, [
+            'rewind' => function () { return false; }
+        ]);
+        $res = new Psr7\Response(200, [], $body);
+        Psr7\rewind_body($res);
+    }
+
+    public function testCanModifyRequestWithUri()
+    {
+        $r1 = new Psr7\Request('GET', 'http://foo.com');
+        $r2 = Psr7\modify_request($r1, [
+            'uri' => new Psr7\Uri('http://www.foo.com')
+        ]);
+        $this->assertEquals('http://www.foo.com', (string) $r2->getUri());
+        $this->assertEquals('www.foo.com', (string) $r2->getHeader('host'));
+    }
+
+    public function testReturnsAsIsWhenNoChanges()
+    {
+        $request = new Psr7\Request('GET', 'http://foo.com');
+        $this->assertSame($request, Psr7\modify_request($request, []));
+    }
+
+    public function testReturnsUriAsIsWhenNoChanges()
+    {
+        $r1 = new Psr7\Request('GET', 'http://foo.com');
+        $r2 = Psr7\modify_request($r1, ['set_headers' => ['foo' => 'bar']]);
+        $this->assertNotSame($r1, $r2);
+        $this->assertEquals('bar', $r2->getHeader('foo'));
+    }
+
+    public function testRemovesHeadersFromMessage()
+    {
+        $r1 = new Psr7\Request('GET', 'http://foo.com', ['foo' => 'bar']);
+        $r2 = Psr7\modify_request($r1, ['remove_headers' => ['foo']]);
+        $this->assertNotSame($r1, $r2);
+        $this->assertFalse($r2->hasHeader('foo'));
+    }
+
+    public function testAddsQueryToUri()
+    {
+        $r1 = new Psr7\Request('GET', 'http://foo.com');
+        $r2 = Psr7\modify_request($r1, ['query' => 'foo=bar']);
+        $this->assertNotSame($r1, $r2);
+        $this->assertEquals('foo=bar', $r2->getUri()->getQuery());
     }
 }

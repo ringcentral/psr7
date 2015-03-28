@@ -197,23 +197,24 @@ function modify_request(RequestInterface $request, array $changes)
     }
 
     $headers = $request->getHeaders();
-    if (isset($changes['remove_headers'])) {
-        foreach ($changes['remove_headers'] as $header) {
-            unset($headers[$header]);
-        }
-    }
-
-    if (isset($changes['set_headers'])) {
-        $headers = $changes['set_headers'] + $headers;
-    }
 
     if (!isset($changes['uri'])) {
         $uri = $request->getUri();
     } else {
+        // Remove the host header if one is on the URI
         if ($host = $changes['uri']->getHost()) {
-            unset($headers['host'], $headers['Host']);
+            $changes['set_headers']['Host'] = $host;
         }
         $uri = $changes['uri'];
+    }
+
+    if (!empty($changes['remove_headers'])) {
+        $headers = _caseless_remove($changes['remove_headers'], $headers);
+    }
+
+    if (!empty($changes['set_headers'])) {
+        _caseless_remove(array_keys($changes['set_headers']), $headers);
+        $headers = $headers = $changes['set_headers'] + $headers;
     }
 
     if (isset($changes['query'])) {
@@ -242,7 +243,7 @@ function rewind_body(MessageInterface $message)
 {
     $body = $message->getBody();
     if ($body->tell() && !$body->rewind()) {
-        throw new \RuntimeException($body, 0);
+        throw new \RuntimeException('Unable to rewind body');
     }
 }
 
@@ -764,3 +765,20 @@ function _parse_request_uri($path, array $headers)
     return $scheme . '://' . $host . '/' . ltrim($path, '/');
 }
 
+/** @internal */
+function _caseless_remove($keys, array $data)
+{
+    $result = [];
+
+    foreach ($keys as &$key) {
+        $key = strtolower($key);
+    }
+
+    foreach ($data as $k => $v) {
+        if (!in_array($k, $keys)) {
+            $result[$k] = $v;
+        }
+    }
+
+    return $result;
+}
