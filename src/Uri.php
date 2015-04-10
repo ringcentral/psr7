@@ -328,8 +328,13 @@ class Uri implements UriInterface
     {
         $scheme = $this->filterScheme($scheme);
 
+        if ($this->scheme === $scheme) {
+            return clone $this;
+        }
+
         $new = clone $this;
         $new->scheme = $scheme;
+        $new->port = $new->filterPort($new->scheme, $new->host, $new->port);
         return $new;
     }
 
