@@ -23,7 +23,7 @@ class UriTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('test', $uri->getFragment());
         $this->assertEquals('test.com', $uri->getHost());
         $this->assertEquals('/path/123', $uri->getPath());
-        $this->assertEquals(443, $uri->getPort());
+        $this->assertEquals(null, $uri->getPort());
         $this->assertEquals('q=abc', $uri->getQuery());
         $this->assertEquals('https', $uri->getScheme());
         $this->assertEquals('michael:test', $uri->getUserInfo());
@@ -66,6 +66,14 @@ class UriTest extends \PHPUnit_Framework_TestCase
     public function testSchemeMustBeValid()
     {
         (new Uri(''))->withScheme('foo');
+    }
+
+    /**
+     * @expectedException \InvalidArgumentException
+     */
+    public function testSchemeMustBeValidWhenConstructed()
+    {
+        new Uri('foo://example.com');
     }
 
     /**

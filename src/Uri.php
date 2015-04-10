@@ -11,6 +11,11 @@ use Psr\Http\Message\UriInterface;
  */
 class Uri implements UriInterface
 {
+    private static $schemes = [
+        'http'  => 80,
+        'https' => 443,
+    ];
+
     private static $charUnreserved = 'a-zA-Z0-9_\-\.~';
     private static $charSubDelims = '!\$&\'\(\)\*\+,;=';
     private static $replaceQuery = ['=' => '%3D', '&' => '%26'];
@@ -301,7 +306,9 @@ class Uri implements UriInterface
 
     public function getPort()
     {
-        return $this->port;
+        return $this->isNonStandardPort($this->scheme, $this->host, $this->port)
+            ? $this->port
+            : null;
     }
 
     public function getPath()
@@ -321,15 +328,7 @@ class Uri implements UriInterface
 
     public function withScheme($scheme)
     {
-        static $valid = ['' => true, 'http' => true, 'https' => true];
-        $scheme = strtolower(str_replace('://', '', $scheme));
-
-        if (!isset($valid[$scheme])) {
-            throw new \InvalidArgumentException(sprintf(
-                'Unsupported scheme "%s"; must be one of ' . implode(', ', $valid),
-                $scheme
-            ));
-        }
+        $scheme = $this->filterScheme($scheme);
 
         $new = clone $this;
         $new->scheme = $scheme;
@@ -417,7 +416,9 @@ class Uri implements UriInterface
      */
     private function applyParts(array $parts)
     {
-        $this->scheme = isset($parts['scheme']) ? $parts['scheme'] : '';
+        $this->scheme = isset($parts['scheme'])
+            ? $this->filterScheme($parts['scheme'])
+            : '';
         $this->userInfo = isset($parts['user']) ? $parts['user'] : '';
         $this->host = isset($parts['host']) ? $parts['host'] : '';
         $this->port = !empty($parts['port']) ? $parts['port'] : null;
@@ -490,15 +491,34 @@ class Uri implements UriInterface
             return false;
         }
 
-        if ($scheme === 'https' && $port !== 443) {
-            return true;
+        return !isset(static::$schemes[$scheme]) || $port !== static::$schemes[$scheme];
+    }
+
+    /**
+     * @param string $scheme
+     *
+     * @return string
+     *
+     * @throws \InvalidArgumentException If the scheme is not one of the allowed schemes.
+     */
+    private function filterScheme($scheme)
+    {
+        $scheme = strtolower($scheme);
+        $scheme = preg_replace('/:(?:\/\/)?$/', '', $scheme);
+
+        if (empty($scheme)) {
+            return '';
         }
 
-        if ($scheme === 'http' && $port !== 80) {
-            return true;
+        if (!array_key_exists($scheme, static::$schemes)) {
+            throw new \InvalidArgumentException(sprintf(
+                'Invalid scheme; must be an empty string or in the set (%s)',
+                $scheme,
+                implode(', ', array_keys(static::$schemes))
+            ));
         }
 
-        return false;
+        return $scheme;
     }
 
     /**
