@@ -329,7 +329,7 @@ class Uri implements UriInterface
         $scheme = $this->filterScheme($scheme);
 
         if ($this->scheme === $scheme) {
-            return clone $this;
+            return $this;
         }
 
         $new = clone $this;
@@ -345,6 +345,10 @@ class Uri implements UriInterface
             $info .= ':' . $password;
         }
 
+        if ($this->userInfo === $info) {
+            return $this;
+        }
+
         $new = clone $this;
         $new->userInfo = $info;
         return $new;
@@ -352,6 +356,10 @@ class Uri implements UriInterface
 
     public function withHost($host)
     {
+        if ($this->host === $host) {
+            return $this;
+        }
+
         $new = clone $this;
         $new->host = $host;
         return $new;
@@ -360,6 +368,10 @@ class Uri implements UriInterface
     public function withPort($port)
     {
         $port = $this->filterPort($this->scheme, $this->host, $port);
+
+        if ($this->port === $port) {
+            return $this;
+        }
 
         $new = clone $this;
         $new->port = $port;
@@ -374,8 +386,14 @@ class Uri implements UriInterface
             );
         }
 
+        $path = $this->filterPath($path);
+
+        if ($this->path === $path) {
+            return $this;
+        }
+
         $new = clone $this;
-        $new->path = $this->filterPath($path);
+        $new->path = $path;
         return $new;
     }
 
@@ -392,8 +410,14 @@ class Uri implements UriInterface
             $query = substr($query, 1);
         }
 
+        $query = $this->filterQueryAndFragment($query);
+
+        if ($this->query === $query) {
+            return $this;
+        }
+
         $new = clone $this;
-        $new->query = $this->filterQueryAndFragment($query);
+        $new->query = $query;
         return $new;
     }
 
@@ -403,8 +427,14 @@ class Uri implements UriInterface
             $fragment = substr($fragment, 1);
         }
 
+        $fragment = $this->filterQueryAndFragment($fragment);
+
+        if ($this->fragment === $fragment) {
+            return $this;
+        }
+
         $new = clone $this;
-        $new->fragment = $this->filterQueryAndFragment($fragment);
+        $new->fragment = $fragment;
         return $new;
     }
 
@@ -504,10 +534,6 @@ class Uri implements UriInterface
     {
         $scheme = strtolower($scheme);
         $scheme = rtrim($scheme, ':/');
-
-        if (empty($scheme)) {
-            return '';
-        }
 
         return $scheme;
     }
