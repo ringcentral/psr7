@@ -11,6 +11,11 @@ use Psr\Http\Message\UriInterface;
  */
 class Uri implements UriInterface
 {
+    private static $schemes = [
+        'http'  => 80,
+        'https' => 443,
+    ];
+
     private static $charUnreserved = 'a-zA-Z0-9_\-\.~';
     private static $charSubDelims = '!\$&\'\(\)\*\+,;=';
     private static $replaceQuery = ['=' => '%3D', '&' => '%26'];
@@ -321,18 +326,15 @@ class Uri implements UriInterface
 
     public function withScheme($scheme)
     {
-        static $valid = ['' => true, 'http' => true, 'https' => true];
-        $scheme = strtolower(str_replace('://', '', $scheme));
+        $scheme = $this->filterScheme($scheme);
 
-        if (!isset($valid[$scheme])) {
-            throw new \InvalidArgumentException(sprintf(
-                'Unsupported scheme "%s"; must be one of ' . implode(', ', $valid),
-                $scheme
-            ));
+        if ($this->scheme === $scheme) {
+            return $this;
         }
 
         $new = clone $this;
         $new->scheme = $scheme;
+        $new->port = $new->filterPort($new->scheme, $new->host, $new->port);
         return $new;
     }
 
@@ -343,6 +345,10 @@ class Uri implements UriInterface
             $info .= ':' . $password;
         }
 
+        if ($this->userInfo === $info) {
+            return $this;
+        }
+
         $new = clone $this;
         $new->userInfo = $info;
         return $new;
@@ -350,6 +356,10 @@ class Uri implements UriInterface
 
     public function withHost($host)
     {
+        if ($this->host === $host) {
+            return $this;
+        }
+
         $new = clone $this;
         $new->host = $host;
         return $new;
@@ -357,15 +367,15 @@ class Uri implements UriInterface
 
     public function withPort($port)
     {
-        if ($port === null || (is_int($port) && $port >= 1 && $port <= 65535)) {
-            $new = clone $this;
-            $new->port = $port;
-            return $new;
+        $port = $this->filterPort($this->scheme, $this->host, $port);
+
+        if ($this->port === $port) {
+            return $this;
         }
 
-        throw new \InvalidArgumentException(
-            'Invalid port; must be null or an integer between 1 and 65535.'
-        );
+        $new = clone $this;
+        $new->port = $port;
+        return $new;
     }
 
     public function withPath($path)
@@ -376,8 +386,14 @@ class Uri implements UriInterface
             );
         }
 
+        $path = $this->filterPath($path);
+
+        if ($this->path === $path) {
+            return $this;
+        }
+
         $new = clone $this;
-        $new->path = $this->filterPath($path);
+        $new->path = $path;
         return $new;
     }
 
@@ -394,8 +410,14 @@ class Uri implements UriInterface
             $query = substr($query, 1);
         }
 
+        $query = $this->filterQueryAndFragment($query);
+
+        if ($this->query === $query) {
+            return $this;
+        }
+
         $new = clone $this;
-        $new->query = $this->filterQueryAndFragment($query);
+        $new->query = $query;
         return $new;
     }
 
@@ -405,8 +427,14 @@ class Uri implements UriInterface
             $fragment = substr($fragment, 1);
         }
 
+        $fragment = $this->filterQueryAndFragment($fragment);
+
+        if ($this->fragment === $fragment) {
+            return $this;
+        }
+
         $new = clone $this;
-        $new->fragment = $this->filterQueryAndFragment($fragment);
+        $new->fragment = $fragment;
         return $new;
     }
 
@@ -417,10 +445,14 @@ class Uri implements UriInterface
      */
     private function applyParts(array $parts)
     {
-        $this->scheme = isset($parts['scheme']) ? $parts['scheme'] : '';
+        $this->scheme = isset($parts['scheme'])
+            ? $this->filterScheme($parts['scheme'])
+            : '';
         $this->userInfo = isset($parts['user']) ? $parts['user'] : '';
         $this->host = isset($parts['host']) ? $parts['host'] : '';
-        $this->port = !empty($parts['port']) ? $parts['port'] : null;
+        $this->port = !empty($parts['port'])
+            ? $this->filterPort($this->scheme, $this->host, $parts['port'])
+            : null;
         $this->path = isset($parts['path'])
             ? $this->filterPath($parts['path'])
             : '';
@@ -490,15 +522,43 @@ class Uri implements UriInterface
             return false;
         }
 
-        if ($scheme === 'https' && $port !== 443) {
-            return true;
+        return !isset(static::$schemes[$scheme]) || $port !== static::$schemes[$scheme];
+    }
+
+    /**
+     * @param string $scheme
+     *
+     * @return string
+     */
+    private function filterScheme($scheme)
+    {
+        $scheme = strtolower($scheme);
+        $scheme = rtrim($scheme, ':/');
+
+        return $scheme;
+    }
+
+    /**
+     * @param string $scheme
+     * @param string $host
+     * @param int $port
+     *
+     * @return int|null
+     *
+     * @throws \InvalidArgumentException If the port is invalid.
+     */
+    private function filterPort($scheme, $host, $port)
+    {
+        if (null !== $port) {
+            $port = (int) $port;
+            if (1 > $port || 0xffff < $port) {
+                throw new \InvalidArgumentException(
+                    sprintf('Invalid port: %d. Must be between 1 and 65535', $port)
+                );
+            }
         }
 
-        if ($scheme === 'http' && $port !== 80) {
-            return true;
-        }
-
-        return false;
+        return $this->isNonStandardPort($scheme, $host, $port) ? $port : null;
     }
 
     /**
