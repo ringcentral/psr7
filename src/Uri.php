@@ -306,9 +306,7 @@ class Uri implements UriInterface
 
     public function getPort()
     {
-        return $this->isNonStandardPort($this->scheme, $this->host, $this->port)
-            ? $this->port
-            : null;
+        return $this->port;
     }
 
     public function getPath()
@@ -356,15 +354,11 @@ class Uri implements UriInterface
 
     public function withPort($port)
     {
-        if ($port === null || (is_int($port) && $port >= 1 && $port <= 65535)) {
-            $new = clone $this;
-            $new->port = $port;
-            return $new;
-        }
+        $port = $this->filterPort($this->scheme, $this->host, $port);
 
-        throw new \InvalidArgumentException(
-            'Invalid port; must be null or an integer between 1 and 65535.'
-        );
+        $new = clone $this;
+        $new->port = $port;
+        return $new;
     }
 
     public function withPath($path)
@@ -421,7 +415,9 @@ class Uri implements UriInterface
             : '';
         $this->userInfo = isset($parts['user']) ? $parts['user'] : '';
         $this->host = isset($parts['host']) ? $parts['host'] : '';
-        $this->port = !empty($parts['port']) ? $parts['port'] : null;
+        $this->port = !empty($parts['port'])
+            ? $this->filterPort($this->scheme, $this->host, $parts['port'])
+            : null;
         $this->path = isset($parts['path'])
             ? $this->filterPath($parts['path'])
             : '';
@@ -498,27 +494,40 @@ class Uri implements UriInterface
      * @param string $scheme
      *
      * @return string
-     *
-     * @throws \InvalidArgumentException If the scheme is not one of the allowed schemes.
      */
     private function filterScheme($scheme)
     {
         $scheme = strtolower($scheme);
-        $scheme = preg_replace('/:(?:\/\/)?$/', '', $scheme);
+        $scheme = rtrim($scheme, ':/');
 
         if (empty($scheme)) {
             return '';
         }
 
-        if (!array_key_exists($scheme, static::$schemes)) {
-            throw new \InvalidArgumentException(sprintf(
-                'Invalid scheme; must be an empty string or in the set (%s)',
-                $scheme,
-                implode(', ', array_keys(static::$schemes))
-            ));
+        return $scheme;
+    }
+
+    /**
+     * @param string $scheme
+     * @param string $host
+     * @param int $port
+     *
+     * @return int|null
+     *
+     * @throws \InvalidArgumentException If the port is invalid.
+     */
+    private function filterPort($scheme, $host, $port)
+    {
+        if (null !== $port) {
+            $port = (int) $port;
+            if (1 > $port || 0xffff < $port) {
+                throw new \InvalidArgumentException(
+                    sprintf('Invalid port: %d. Must be between 1 and 65535', $port)
+                );
+            }
         }
 
-        return $scheme;
+        return $this->isNonStandardPort($scheme, $host, $port) ? $port : null;
     }
 
     /**

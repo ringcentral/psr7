@@ -63,22 +63,6 @@ class UriTest extends \PHPUnit_Framework_TestCase
     /**
      * @expectedException \InvalidArgumentException
      */
-    public function testSchemeMustBeValid()
-    {
-        (new Uri(''))->withScheme('foo');
-    }
-
-    /**
-     * @expectedException \InvalidArgumentException
-     */
-    public function testSchemeMustBeValidWhenConstructed()
-    {
-        new Uri('foo://example.com');
-    }
-
-    /**
-     * @expectedException \InvalidArgumentException
-     */
     public function testPortMustBeValid()
     {
         (new Uri(''))->withPort(100000);
