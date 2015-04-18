@@ -1,12 +1,13 @@
 <?php
 namespace GuzzleHttp\Psr7;
 
-use Psr\Http\Message\StreamableInterface;
+use Psr\Http\Message\StreamInterface;
+
 
 /**
  * Decorator used to return only a subset of a stream
  */
-class LimitStream implements StreamableInterface
+class LimitStream implements StreamInterface
 {
     use StreamDecoratorTrait;
 
@@ -17,14 +18,14 @@ class LimitStream implements StreamableInterface
     private $limit;
 
     /**
-     * @param StreamableInterface $stream Stream to wrap
+     * @param StreamInterface $stream Stream to wrap
      * @param int             $limit  Total number of bytes to allow to be read
      *                                from the stream. Pass -1 for no limit.
      * @param int|null        $offset Position to seek to before reading (only
      *                                works on seekable streams).
      */
     public function __construct(
-        StreamableInterface $stream,
+        StreamInterface $stream,
         $limit = -1,
         $offset = 0
     ) {
@@ -45,12 +46,7 @@ class LimitStream implements StreamableInterface
             return false;
         }
 
-        $tell = $this->stream->tell();
-        if ($tell === false) {
-            return false;
-        }
-
-        return $tell >= $this->offset + $this->limit;
+        return $this->stream->tell() >= $this->offset + $this->limit;
     }
 
     /**
@@ -75,7 +71,11 @@ class LimitStream implements StreamableInterface
     public function seek($offset, $whence = SEEK_SET)
     {
         if ($whence !== SEEK_SET || $offset < 0) {
-            return false;
+            throw new \RuntimeException(sprintf(
+                'Cannot seek to offset % with whence %s',
+                $offset,
+                $whence
+            ));
         }
 
         $offset += $this->offset;
@@ -86,7 +86,7 @@ class LimitStream implements StreamableInterface
             }
         }
 
-        return $this->stream->seek($offset);
+        $this->stream->seek($offset);
     }
 
     /**
@@ -103,7 +103,6 @@ class LimitStream implements StreamableInterface
      *
      * @param int $offset Offset to seek to and begin byte limiting from
      *
-     * @return self
      * @throws \RuntimeException if the stream cannot be seeked.
      */
     public function setOffset($offset)
@@ -112,18 +111,16 @@ class LimitStream implements StreamableInterface
 
         if ($current !== $offset) {
             // If the stream cannot seek to the offset position, then read to it
-            if (!$this->stream->seek($offset)) {
-                if ($current > $offset) {
-                    throw new \RuntimeException("Could not seek to stream offset $offset");
-                } else {
-                    $this->stream->read($offset - $current);
-                }
+            if ($this->stream->isSeekable()) {
+                $this->stream->seek($offset);
+            } elseif ($current > $offset) {
+                throw new \RuntimeException("Could not seek to stream offset $offset");
+            } else {
+                $this->stream->read($offset - $current);
             }
         }
 
         $this->offset = $offset;
-
-        return $this;
     }
 
     /**
@@ -132,13 +129,10 @@ class LimitStream implements StreamableInterface
      *
      * @param int $limit Number of bytes to allow to be read from the stream.
      *                   Use -1 for no limit.
-     * @return self
      */
     public function setLimit($limit)
     {
         $this->limit = $limit;
-
-        return $this;
     }
 
     public function read($length)
@@ -154,8 +148,8 @@ class LimitStream implements StreamableInterface
             // Only return the amount of requested data, ensuring that the byte
             // limit is not exceeded
             return $this->stream->read(min($remaining, $length));
-        } else {
-            return false;
         }
+
+        return '';
     }
 }

@@ -1,17 +1,17 @@
 <?php
 namespace GuzzleHttp\Psr7;
 
-use Psr\Http\Message\StreamableInterface;
+use Psr\Http\Message\StreamInterface;
 
 /**
  * Stream decorator that can cache previously read bytes from a sequentially
  * read stream.
  */
-class CachingStream implements StreamableInterface
+class CachingStream implements StreamInterface
 {
     use StreamDecoratorTrait;
 
-    /** @var StreamableInterface Stream being wrapped */
+    /** @var StreamInterface Stream being wrapped */
     private $remoteStream;
 
     /** @var int Number of bytes to skip reading due to a write on the buffer */
@@ -20,12 +20,12 @@ class CachingStream implements StreamableInterface
     /**
      * We will treat the buffer object as the body of the stream
      *
-     * @param StreamableInterface $stream Stream to cache
-     * @param StreamableInterface $target Optionally specify where data is cached
+     * @param StreamInterface $stream Stream to cache
+     * @param StreamInterface $target Optionally specify where data is cached
      */
     public function __construct(
-        StreamableInterface $stream,
-        StreamableInterface $target = null
+        StreamInterface $stream,
+        StreamInterface $target = null
     ) {
         $this->remoteStream = $stream;
         $this->stream = $target ?: new Stream(fopen('php://temp', 'r+'));
@@ -38,7 +38,7 @@ class CachingStream implements StreamableInterface
 
     public function rewind()
     {
-        return $this->seek(0);
+        $this->seek(0);
     }
 
     /**
@@ -53,7 +53,7 @@ class CachingStream implements StreamableInterface
         } elseif ($whence == SEEK_CUR) {
             $byte = $offset + $this->tell();
         } else {
-            return false;
+            throw new \RuntimeException('CachingStream::seek() supports SEEK_SET and SEEK_CUR');
         }
 
         // You cannot skip ahead past where you've read from the remote stream
@@ -64,7 +64,7 @@ class CachingStream implements StreamableInterface
             );
         }
 
-        return $this->stream->seek($byte);
+        $this->stream->seek($byte);
     }
 
     public function read($length)

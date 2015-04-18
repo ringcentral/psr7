@@ -11,8 +11,6 @@ class CachingStreamTest extends \PHPUnit_Framework_TestCase
 {
     /** @var CachingStream */
     protected $body;
-
-    /** @var Stream */
     protected $decorated;
 
     public function setUp()
@@ -43,9 +41,13 @@ class CachingStreamTest extends \PHPUnit_Framework_TestCase
         $this->body->seek(10);
     }
 
+    /**
+     * @expectedException \RuntimeException
+     * @expectedExceptionMessage CachingStream::seek() supports SEEK_SET and SEEK_CUR
+     */
     public function testCannotUseSeekEnd()
     {
-        $this->assertFalse($this->body->seek(2, SEEK_END));
+        $this->body->seek(2, SEEK_END);
     }
 
     public function testRewindUsesSeek()

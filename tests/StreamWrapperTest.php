@@ -62,7 +62,7 @@ class StreamWrapperTest extends \PHPUnit_Framework_TestCase
      */
     public function testValidatesStream()
     {
-        $stream = $this->getMockBuilder('Psr\Http\Message\StreamableInterface')
+        $stream = $this->getMockBuilder('Psr\Http\Message\StreamInterface')
             ->setMethods(['isReadable', 'isWritable'])
             ->getMockForAbstractClass();
         $stream->expects($this->once())
@@ -84,7 +84,7 @@ class StreamWrapperTest extends \PHPUnit_Framework_TestCase
 
     public function testCanOpenReadonlyStream()
     {
-        $stream = $this->getMockBuilder('Psr\Http\Message\StreamableInterface')
+        $stream = $this->getMockBuilder('Psr\Http\Message\StreamInterface')
             ->setMethods(['isReadable', 'isWritable'])
             ->getMockForAbstractClass();
         $stream->expects($this->once())

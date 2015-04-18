@@ -21,9 +21,7 @@ class FunctionsTest extends \PHPUnit_Framework_TestCase
     {
         $s1 = Psr7\stream_for('foobaz');
         $s1 = FnStream::decorate($s1, [
-            'read' => function () {
-                return false;
-            }
+            'read' => function () { return ''; }
         ]);
         $result = Psr7\copy_to_string($s1);
         $this->assertEquals('', $result);
@@ -244,9 +242,9 @@ class FunctionsTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('GET', $request->getMethod());
         $this->assertEquals('/abc', $request->getRequestTarget());
         $this->assertEquals('1.0', $request->getProtocolVersion());
-        $this->assertEquals('foo.com', $request->getHeader('Host'));
-        $this->assertEquals('Bar', $request->getHeader('Foo'));
-        $this->assertEquals('Bam, Qux', $request->getHeader('Baz'));
+        $this->assertEquals('foo.com', $request->getHeaderLine('Host'));
+        $this->assertEquals('Bar', $request->getHeaderLine('Foo'));
+        $this->assertEquals('Bam, Qux', $request->getHeaderLine('Baz'));
         $this->assertEquals('Test', (string) $request->getBody());
         $this->assertEquals('http://foo.com/abc', (string) $request->getUri());
     }
@@ -258,7 +256,7 @@ class FunctionsTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('PUT', $request->getMethod());
         $this->assertEquals('/abc?baz=bar', $request->getRequestTarget());
         $this->assertEquals('1.1', $request->getProtocolVersion());
-        $this->assertEquals('foo.com:443', $request->getHeader('Host'));
+        $this->assertEquals('foo.com:443', $request->getHeaderLine('Host'));
         $this->assertEquals('', (string) $request->getBody());
         $this->assertEquals('https://foo.com/abc?baz=bar', (string) $request->getUri());
     }
@@ -287,8 +285,8 @@ class FunctionsTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(200, $response->getStatusCode());
         $this->assertEquals('OK', $response->getReasonPhrase());
         $this->assertEquals('1.0', $response->getProtocolVersion());
-        $this->assertEquals('Bar', $response->getHeader('Foo'));
-        $this->assertEquals('Bam, Qux', $response->getHeader('Baz'));
+        $this->assertEquals('Bar', $response->getHeaderLine('Foo'));
+        $this->assertEquals('Bam, Qux', $response->getHeaderLine('Baz'));
         $this->assertEquals('Test', (string) $response->getBody());
     }
 
@@ -533,7 +531,7 @@ class FunctionsTest extends \PHPUnit_Framework_TestCase
             'uri' => new Psr7\Uri('http://www.foo.com')
         ]);
         $this->assertEquals('http://www.foo.com', (string) $r2->getUri());
-        $this->assertEquals('www.foo.com', (string) $r2->getHeader('host'));
+        $this->assertEquals('www.foo.com', (string) $r2->getHeaderLine('host'));
     }
 
     public function testReturnsAsIsWhenNoChanges()
@@ -547,7 +545,7 @@ class FunctionsTest extends \PHPUnit_Framework_TestCase
         $r1 = new Psr7\Request('GET', 'http://foo.com');
         $r2 = Psr7\modify_request($r1, ['set_headers' => ['foo' => 'bar']]);
         $this->assertNotSame($r1, $r2);
-        $this->assertEquals('bar', $r2->getHeader('foo'));
+        $this->assertEquals('bar', $r2->getHeaderLine('foo'));
     }
 
     public function testRemovesHeadersFromMessage()

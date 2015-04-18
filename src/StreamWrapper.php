@@ -1,7 +1,7 @@
 <?php
 namespace GuzzleHttp\Psr7;
 
-use Psr\Http\Message\StreamableInterface;
+use Psr\Http\Message\StreamInterface;
 
 /**
  * Converts Guzzle streams into PHP stream resources.
@@ -11,7 +11,7 @@ class StreamWrapper
     /** @var resource */
     public $context;
 
-    /** @var StreamableInterface */
+    /** @var StreamInterface */
     private $stream;
 
     /** @var string r, r+, or w */
@@ -20,12 +20,12 @@ class StreamWrapper
     /**
      * Returns a resource representing the stream.
      *
-     * @param StreamableInterface $stream The stream to get a resource for
+     * @param StreamInterface $stream The stream to get a resource for
      *
      * @return resource
      * @throws \InvalidArgumentException if stream is not readable or writable
      */
-    public static function getResource(StreamableInterface $stream)
+    public static function getResource(StreamInterface $stream)
     {
         self::register();
 
@@ -89,7 +89,9 @@ class StreamWrapper
 
     public function stream_seek($offset, $whence)
     {
-        return $this->stream->seek($offset, $whence);
+        $this->stream->seek($offset, $whence);
+
+        return true;
     }
 
     public function stream_stat()

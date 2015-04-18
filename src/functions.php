@@ -4,7 +4,7 @@ namespace GuzzleHttp\Psr7;
 use Psr\Http\Message\MessageInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\StreamableInterface;
+use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UriInterface;
 
 /**
@@ -63,7 +63,7 @@ function uri_for($uri)
  * - metadata: Array of custom metadata.
  * - size: Size of the stream.
  *
- * @param resource|string|StreamableInterface $resource Entity body data
+ * @param resource|string|StreamInterface $resource Entity body data
  * @param array                           $options  Additional options
  *
  * @return Stream
@@ -82,7 +82,7 @@ function stream_for($resource = '', array $options = [])
         case 'resource':
             return new Stream($resource, $options);
         case 'object':
-            if ($resource instanceof StreamableInterface) {
+            if ($resource instanceof StreamInterface) {
                 return $resource;
             } elseif ($resource instanceof \Iterator) {
                 return new PumpStream(function () use ($resource) {
@@ -286,19 +286,21 @@ function try_fopen($filename, $mode)
  * Copy the contents of a stream into a string until the given number of
  * bytes have been read.
  *
- * @param StreamableInterface $stream Stream to read
+ * @param StreamInterface $stream Stream to read
  * @param int             $maxLen Maximum number of bytes to read. Pass -1
  *                                to read the entire stream.
  * @return string
+ * @throws \RuntimeException on error.
  */
-function copy_to_string(StreamableInterface $stream, $maxLen = -1)
+function copy_to_string(StreamInterface $stream, $maxLen = -1)
 {
     $buffer = '';
 
     if ($maxLen === -1) {
         while (!$stream->eof()) {
             $buf = $stream->read(1048576);
-            if ($buf === false) {
+            // Using a loose equality here to match on '' and false.
+            if ($buf == null) {
                 break;
             }
             $buffer .= $buf;
@@ -309,7 +311,8 @@ function copy_to_string(StreamableInterface $stream, $maxLen = -1)
     $len = 0;
     while (!$stream->eof() && $len < $maxLen) {
         $buf = $stream->read($maxLen - $len);
-        if ($buf === false) {
+        // Using a loose equality here to match on '' and false.
+        if ($buf == null) {
             break;
         }
         $buffer .= $buf;
@@ -323,14 +326,16 @@ function copy_to_string(StreamableInterface $stream, $maxLen = -1)
  * Copy the contents of a stream into another stream until the given number
  * of bytes have been read.
  *
- * @param StreamableInterface $source Stream to read from
- * @param StreamableInterface $dest   Stream to write to
+ * @param StreamInterface $source Stream to read from
+ * @param StreamInterface $dest   Stream to write to
  * @param int             $maxLen Maximum number of bytes to read. Pass -1
  *                                to read the entire stream.
+ *
+ * @throws \RuntimeException on error.
  */
 function copy_to_stream(
-    StreamableInterface $source,
-    StreamableInterface $dest,
+    StreamInterface $source,
+    StreamInterface $dest,
     $maxLen = -1
 ) {
     if ($maxLen === -1) {
@@ -359,22 +364,22 @@ function copy_to_stream(
 /**
  * Calculate a hash of a Stream
  *
- * @param StreamableInterface $stream    Stream to calculate the hash for
+ * @param StreamInterface $stream    Stream to calculate the hash for
  * @param string          $algo      Hash algorithm (e.g. md5, crc32, etc)
  * @param bool            $rawOutput Whether or not to use raw output
  *
  * @return string Returns the hash of the stream
- * @throws \RuntimeException
+ * @throws \RuntimeException on error.
  */
 function hash(
-    StreamableInterface $stream,
+    StreamInterface $stream,
     $algo,
     $rawOutput = false
 ) {
     $pos = $stream->tell();
 
-    if ($pos > 0 && !$stream->seek(0)) {
-        throw new \RuntimeException('Cannot seek to to ' . $pos);
+    if ($pos > 0) {
+        $stream->rewind();
     }
 
     $ctx = hash_init($algo);
@@ -391,18 +396,19 @@ function hash(
 /**
  * Read a line from the stream up to the maximum allowed buffer length
  *
- * @param StreamableInterface $stream    Stream to read from
+ * @param StreamInterface $stream    Stream to read from
  * @param int             $maxLength Maximum buffer length
  *
  * @return string|bool
  */
-function readline(StreamableInterface $stream, $maxLength = null)
+function readline(StreamInterface $stream, $maxLength = null)
 {
     $buffer = '';
     $size = 0;
 
     while (!$stream->eof()) {
-        if (false === ($byte = $stream->read(1))) {
+        // Using a loose equality here to match on '' and false.
+        if (null == ($byte = $stream->read(1))) {
             return $buffer;
         }
         $buffer .= $byte;

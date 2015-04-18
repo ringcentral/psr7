@@ -1,8 +1,7 @@
 <?php
 namespace GuzzleHttp\Psr7;
 
-use Psr\Http\Message\MessageInterface;
-use Psr\Http\Message\StreamableInterface;
+use Psr\Http\Message\StreamInterface;
 
 /**
  * Trait implementing functionality common to requests and responses.
@@ -18,7 +17,7 @@ trait MessageTrait
     /** @var string */
     private $protocol = '1.1';
 
-    /** @var StreamableInterface */
+    /** @var StreamInterface */
     private $stream;
 
     public function getProtocolVersion()
@@ -50,16 +49,12 @@ trait MessageTrait
     public function getHeader($header)
     {
         $name = strtolower($header);
-
-        return isset($this->headers[$name])
-            ? implode(', ', $this->headers[$name])
-            : '';
+        return isset($this->headers[$name]) ? $this->headers[$name] : [];
     }
 
-    public function getHeaderLines($header)
+    public function getHeaderLine($header)
     {
-        $name = strtolower($header);
-        return isset($this->headers[$name]) ? $this->headers[$name] : [];
+        return implode(', ', $this->getHeader($header));
     }
 
     public function withHeader($header, $value)
@@ -129,7 +124,7 @@ trait MessageTrait
         return $this->stream;
     }
 
-    public function withBody(StreamableInterface $body)
+    public function withBody(StreamInterface $body)
     {
         if ($body === $this->stream) {
             return $this;

@@ -71,16 +71,6 @@ class StreamTest extends \PHPUnit_Framework_TestCase
         $stream->close();
     }
 
-    public function testAllowsSettingManualSize()
-    {
-        $handle = fopen('php://temp', 'w+');
-        fwrite($handle, 'data');
-        $stream = new Stream($handle);
-        $stream->setSize(10);
-        $this->assertEquals(10, $stream->getSize());
-        $stream->close();
-    }
-
     public function testGetSize()
     {
         $size = filesize(__FILE__);
@@ -124,19 +114,27 @@ class StreamTest extends \PHPUnit_Framework_TestCase
         $stream->write('foo');
         $this->assertTrue($stream->isReadable());
         $this->assertSame($r, $stream->detach());
-        $this->assertNull($stream->detach());
+        $stream->detach();
 
         $this->assertFalse($stream->isReadable());
-        $this->assertFalse($stream->read(10));
         $this->assertFalse($stream->isWritable());
-        $this->assertFalse($stream->write('bar'));
         $this->assertFalse($stream->isSeekable());
-        $this->assertFalse($stream->seek(10));
-        $this->assertFalse($stream->tell());
-        $this->assertTrue($stream->eof());
-        $this->assertNull($stream->getSize());
+
+        $throws = function (callable $fn) use ($stream) {
+            try {
+                $fn($stream);
+                $this->fail();
+            } catch (\Exception $e) {}
+        };
+
+        $throws(function ($stream) { $stream->read(10); });
+        $throws(function ($stream) { $stream->write('bar'); });
+        $throws(function ($stream) { $stream->seek(10); });
+        $throws(function ($stream) { $stream->tell(); });
+        $throws(function ($stream) { $stream->eof(); });
+        $throws(function ($stream) { $stream->getSize(); });
+        $throws(function ($stream) { $stream->getContents(); });
         $this->assertSame('', (string) $stream);
-        $this->assertSame('', $stream->getContents());
         $stream->close();
     }
 
@@ -146,17 +144,10 @@ class StreamTest extends \PHPUnit_Framework_TestCase
         $stream = new Stream($handle);
         $stream->close();
 
-        $this->assertEmpty($stream->getMetadata());
         $this->assertFalse($stream->isSeekable());
         $this->assertFalse($stream->isReadable());
         $this->assertFalse($stream->isWritable());
         $this->assertNull($stream->getSize());
-    }
-}
-
-class HasToString
-{
-    public function __toString() {
-        return 'foo';
+        $this->assertEmpty($stream->getMetadata());
     }
 }

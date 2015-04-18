@@ -1,7 +1,7 @@
 <?php
 namespace GuzzleHttp\Psr7;
 
-use Psr\Http\Message\StreamableInterface;
+use Psr\Http\Message\StreamInterface;
 
 /**
  * Provides a read only stream that pumps data from a PHP callable.
@@ -13,7 +13,7 @@ use Psr\Http\Message\StreamableInterface;
  * the read() function of the PumpStream. The provided callable MUST return
  * false when there is no more data to read.
  */
-class PumpStream implements StreamableInterface
+class PumpStream implements StreamInterface
 {
     /** @var callable */
     private $source;
@@ -50,7 +50,11 @@ class PumpStream implements StreamableInterface
 
     public function __toString()
     {
-        return copy_to_string($this);
+        try {
+            return copy_to_string($this);
+        } catch (\Exception $e) {
+            return '';
+        }
     }
 
     public function close()
@@ -86,12 +90,12 @@ class PumpStream implements StreamableInterface
 
     public function rewind()
     {
-        return $this->seek(0);
+        $this->seek(0);
     }
 
     public function seek($offset, $whence = SEEK_SET)
     {
-        return false;
+        throw new \RuntimeException('Cannot seek a PumpStream');
     }
 
     public function isWritable()
@@ -101,7 +105,7 @@ class PumpStream implements StreamableInterface
 
     public function write($string)
     {
-        return false;
+        throw new \RuntimeException('Cannot write to a PumpStream');
     }
 
     public function isReadable()

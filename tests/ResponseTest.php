@@ -54,7 +54,7 @@ class ResponseTest extends \PHPUnit_Framework_TestCase
         $r = new Response();
         $r2 = $r->withAddedHeader('foo', ['baz', 'bar']);
         $this->assertFalse($r->hasHeader('foo'));
-        $this->assertEquals('baz, bar', $r2->getHeader('foo'));
+        $this->assertEquals('baz, bar', $r2->getHeaderLine('foo'));
     }
 
     public function testReturnsIdentityWhenRemovingMissingHeader()
@@ -66,7 +66,7 @@ class ResponseTest extends \PHPUnit_Framework_TestCase
     public function testAlwaysReturnsBody()
     {
         $r = new Response();
-        $this->assertInstanceOf('Psr\Http\Message\StreamableInterface', $r->getBody());
+        $this->assertInstanceOf('Psr\Http\Message\StreamInterface', $r->getBody());
     }
 
     public function testCanSetHeaderAsArray()
@@ -74,8 +74,8 @@ class ResponseTest extends \PHPUnit_Framework_TestCase
         $r = new Response(200, [
             'foo' => ['baz ', ' bar ']
         ]);
-        $this->assertEquals('baz, bar', $r->getHeader('foo'));
-        $this->assertEquals(['baz', 'bar'], $r->getHeaderLines('foo'));
+        $this->assertEquals('baz, bar', $r->getHeaderLine('foo'));
+        $this->assertEquals(['baz', 'bar'], $r->getHeader('foo'));
     }
 
     public function testSameInstanceWhenSameBody()
@@ -117,7 +117,7 @@ class ResponseTest extends \PHPUnit_Framework_TestCase
         $r = new Response(200, ['Foo' => 'Bar']);
         $r2 = $r->withAddedHeader('Foo', 'Baz');
         $this->assertNotSame($r, $r2);
-        $this->assertEquals('Bar, Baz', $r2->getHeader('foo'));
+        $this->assertEquals('Bar, Baz', $r2->getHeaderLine('foo'));
     }
 
     public function testNewInstanceWhenAddingHeaderThatWasNotThereBefore()
@@ -125,8 +125,8 @@ class ResponseTest extends \PHPUnit_Framework_TestCase
         $r = new Response(200, ['Foo' => 'Bar']);
         $r2 = $r->withAddedHeader('Baz', 'Bam');
         $this->assertNotSame($r, $r2);
-        $this->assertEquals('Bam', $r2->getHeader('Baz'));
-        $this->assertEquals('Bar', $r2->getHeader('Foo'));
+        $this->assertEquals('Bam', $r2->getHeaderLine('Baz'));
+        $this->assertEquals('Bar', $r2->getHeaderLine('Foo'));
     }
 
     public function testRemovesPreviouslyAddedHeaderOfDifferentCase()
@@ -134,6 +134,6 @@ class ResponseTest extends \PHPUnit_Framework_TestCase
         $r = new Response(200, ['Foo' => 'Bar']);
         $r2 = $r->withHeader('foo', 'Bam');
         $this->assertNotSame($r, $r2);
-        $this->assertEquals('Bam', $r2->getHeader('Foo'));
+        $this->assertEquals('Bam', $r2->getHeaderLine('Foo'));
     }
 }

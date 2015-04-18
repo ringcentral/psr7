@@ -43,11 +43,27 @@ class LimitStreamTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('baz', (string) $limited);
     }
 
+    /**
+     * @expectedException \RuntimeException
+     * @expectedExceptionMessage Unable to seek to stream position 10 with whence 0
+     */
+    public function testEnsuresPositionCanBeekSeekedTo()
+    {
+        new LimitStream(Psr7\stream_for(''), 0, 10);
+    }
+
     public function testReturnsSubsetOfEmptyBodyWhenCastToString()
     {
-        $body = Psr7\stream_for('');
+        $body = Psr7\stream_for('01234567891234');
         $limited = new LimitStream($body, 0, 10);
         $this->assertEquals('', (string) $limited);
+    }
+
+    public function testReturnsSpecificSubsetOBodyWhenCastToString()
+    {
+        $body = Psr7\stream_for('0123456789abcdef');
+        $limited = new LimitStream($body, 3, 10);
+        $this->assertEquals('abc', (string) $limited);
     }
 
     public function testSeeksWhenConstructed()
@@ -58,26 +74,33 @@ class LimitStreamTest extends \PHPUnit_Framework_TestCase
 
     public function testAllowsBoundedSeek()
     {
-        $this->assertEquals(true, $this->body->seek(100));
+        $this->body->seek(100);
         $this->assertEquals(10, $this->body->tell());
         $this->assertEquals(13, $this->decorated->tell());
-        $this->assertEquals(true, $this->body->seek(0));
+        $this->body->seek(0);
         $this->assertEquals(0, $this->body->tell());
         $this->assertEquals(3, $this->decorated->tell());
-        $this->assertEquals(false, $this->body->seek(-10));
+        try {
+            $this->body->seek(-10);
+            $this->fail();
+        } catch (\RuntimeException $e) {}
         $this->assertEquals(0, $this->body->tell());
         $this->assertEquals(3, $this->decorated->tell());
-        $this->assertEquals(true, $this->body->seek(5));
+        $this->body->seek(5);
         $this->assertEquals(5, $this->body->tell());
         $this->assertEquals(8, $this->decorated->tell());
-        $this->assertEquals(false, $this->body->seek(1000, SEEK_END));
+        // Fail
+        try {
+            $this->body->seek(1000, SEEK_END);
+            $this->fail();
+        } catch (\RuntimeException $e) {}
     }
 
     public function testReadsOnlySubsetOfData()
     {
         $data = $this->body->read(100);
         $this->assertEquals(10, strlen($data));
-        $this->assertFalse($this->body->read(1000));
+        $this->assertSame('', $this->body->read(1000));
 
         $this->body->setOffset(10);
         $newData = $this->body->read(100);
@@ -96,6 +119,14 @@ class LimitStreamTest extends \PHPUnit_Framework_TestCase
         $c = new LimitStream($b);
         $a->getContents();
         $c->setOffset(2);
+    }
+
+    public function testCanGetContentsWithoutSeeking()
+    {
+        $a = Psr7\stream_for('foo_bar');
+        $b = new NoSeekStream($a);
+        $c = new LimitStream($b);
+        $this->assertEquals('foo_bar', $c->getContents());
     }
 
     public function testClaimsConsumedWhenReadLimitIsReached()

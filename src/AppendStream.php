@@ -1,16 +1,16 @@
 <?php
 namespace GuzzleHttp\Psr7;
 
-use Psr\Http\Message\StreamableInterface;
+use Psr\Http\Message\StreamInterface;
 
 /**
  * Reads from multiple streams, one after the other.
  *
  * This is a read-only stream decorator.
  */
-class AppendStream implements StreamableInterface
+class AppendStream implements StreamInterface
 {
-    /** @var StreamableInterface[] Streams being decorated */
+    /** @var StreamInterface[] Streams being decorated */
     private $streams = [];
 
     private $seekable = true;
@@ -19,7 +19,7 @@ class AppendStream implements StreamableInterface
     private $detached = false;
 
     /**
-     * @param StreamableInterface[] $streams Streams to decorate. Each stream must
+     * @param StreamInterface[] $streams Streams to decorate. Each stream must
      *                                   be readable.
      */
     public function __construct(array $streams = [])
@@ -32,7 +32,7 @@ class AppendStream implements StreamableInterface
     public function __toString()
     {
         try {
-            $this->seek(0);
+            $this->rewind();
             return $this->getContents();
         } catch (\Exception $e) {
             return '';
@@ -42,11 +42,11 @@ class AppendStream implements StreamableInterface
     /**
      * Add a stream to the AppendStream
      *
-     * @param StreamableInterface $stream Stream to append. Must be readable.
+     * @param StreamInterface $stream Stream to append. Must be readable.
      *
      * @throws \InvalidArgumentException if the stream is not readable
      */
-    public function addStream(StreamableInterface $stream)
+    public function addStream(StreamInterface $stream)
     {
         if (!$stream->isReadable()) {
             throw new \InvalidArgumentException('Each stream must be readable');
@@ -129,7 +129,7 @@ class AppendStream implements StreamableInterface
 
     public function rewind()
     {
-        return $this->seek(0);
+        $this->seek(0);
     }
 
     /**
@@ -139,30 +139,31 @@ class AppendStream implements StreamableInterface
      */
     public function seek($offset, $whence = SEEK_SET)
     {
-        if (!$this->seekable || $whence !== SEEK_SET) {
-            return false;
+        if (!$this->seekable) {
+            throw new \RuntimeException('This AppendStream is not seekable');
+        } elseif ($whence !== SEEK_SET) {
+            throw new \RuntimeException('The AppendStream can only seek with SEEK_SET');
         }
 
-        $success = true;
         $this->pos = $this->current = 0;
 
         // Rewind each stream
-        foreach ($this->streams as $stream) {
-            if (!$stream->seek(0)) {
-                $success = false;
+        foreach ($this->streams as $i => $stream) {
+            try {
+                $stream->rewind();
+            } catch (\Exception $e) {
+                throw new \RuntimeException('Unable to seek stream '
+                    . $i . ' of the AppendStream', 0, $e);
             }
-        }
-
-        if (!$success) {
-            return false;
         }
 
         // Seek to the actual position by reading from each stream
         while ($this->pos < $offset && !$this->eof()) {
-            $this->read(min(8096, $offset - $this->pos));
+            $result = $this->read(min(8096, $offset - $this->pos));
+            if ($result === '') {
+                break;
+            }
         }
-
-        return $this->pos == $offset;
     }
 
     /**
@@ -179,12 +180,17 @@ class AppendStream implements StreamableInterface
         while ($remaining > 0) {
             // Progress to the next stream if needed.
             if ($this->streams[$this->current]->eof()) {
-                if ($this->current == $total) {
+                if ($this->current === $total) {
                     break;
                 }
                 $this->current++;
             }
-            $buffer .= $this->streams[$this->current]->read($remaining);
+            $result = $this->streams[$this->current]->read($remaining);
+            // Using a loose comparison here to match on '', false, and null
+            if ($result == null) {
+                break;
+            }
+            $buffer .= $result;
             $remaining = $length - strlen($buffer);
         }
 
@@ -210,7 +216,7 @@ class AppendStream implements StreamableInterface
 
     public function write($string)
     {
-        return false;
+        throw new \RuntimeException('Cannot write to an AppendStream');
     }
 
     public function getMetadata($key = null)

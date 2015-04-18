@@ -1,11 +1,11 @@
 <?php
 namespace GuzzleHttp\Tests\Psr7;
 
-use Psr\Http\Message\StreamableInterface;
+use Psr\Http\Message\StreamInterface;
 use GuzzleHttp\Psr7;
 use GuzzleHttp\Psr7\StreamDecoratorTrait;
 
-class Str implements StreamableInterface
+class Str implements StreamInterface
 {
     use StreamDecoratorTrait;
 }
@@ -30,7 +30,7 @@ class StreamDecoratorTraitTest extends \PHPUnit_Framework_TestCase
 
     public function testCatchesExceptionsWhenCastingToString()
     {
-        $s = $this->getMockBuilder('Psr\Http\Message\StreamableInterface')
+        $s = $this->getMockBuilder('Psr\Http\Message\StreamInterface')
             ->setMethods(['read'])
             ->getMockForAbstractClass();
         $s->expects($this->once())
@@ -51,8 +51,6 @@ class StreamDecoratorTraitTest extends \PHPUnit_Framework_TestCase
     public function testHasSize()
     {
         $this->assertEquals(3, $this->b->getSize());
-        $this->assertSame($this->b, $this->b->setSize(2));
-        $this->assertEquals(2, $this->b->getSize());
     }
 
     public function testReads()
@@ -69,13 +67,13 @@ class StreamDecoratorTraitTest extends \PHPUnit_Framework_TestCase
 
     public function testSeeksAndTells()
     {
-        $this->assertTrue($this->b->seek(1));
+        $this->b->seek(1);
         $this->assertEquals(1, $this->a->tell());
         $this->assertEquals(1, $this->b->tell());
-        $this->assertTrue($this->b->seek(0));
+        $this->b->seek(0);
         $this->assertEquals(0, $this->a->tell());
         $this->assertEquals(0, $this->b->tell());
-        $this->assertTrue($this->b->seek(0, SEEK_END));
+        $this->b->seek(0, SEEK_END);
         $this->assertEquals(3, $this->a->tell());
         $this->assertEquals(3, $this->b->tell());
     }

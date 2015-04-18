@@ -1,13 +1,13 @@
 <?php
 namespace GuzzleHttp\Psr7;
 
-use Psr\Http\Message\StreamableInterface;
+use Psr\Http\Message\StreamInterface;
 
 /**
  * Lazily reads or writes to a file that is opened only after an IO operation
  * take place on the stream.
  */
-class LazyOpenStream implements StreamableInterface
+class LazyOpenStream implements StreamInterface
 {
     use StreamDecoratorTrait;
 
@@ -30,7 +30,7 @@ class LazyOpenStream implements StreamableInterface
     /**
      * Creates the underlying stream lazily when required.
      *
-     * @return StreamableInterface
+     * @return StreamInterface
      */
     protected function createStream()
     {

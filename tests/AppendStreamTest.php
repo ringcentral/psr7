@@ -13,7 +13,7 @@ class AppendStreamTest extends \PHPUnit_Framework_TestCase
     public function testValidatesStreamsAreReadable()
     {
         $a = new AppendStream();
-        $s = $this->getMockBuilder('Psr\Http\Message\StreamableInterface')
+        $s = $this->getMockBuilder('Psr\Http\Message\StreamInterface')
             ->setMethods(['isReadable'])
             ->getMockForAbstractClass();
         $s->expects($this->once())
@@ -22,17 +22,25 @@ class AppendStreamTest extends \PHPUnit_Framework_TestCase
         $a->addStream($s);
     }
 
+    /**
+     * @expectedException \RuntimeException
+     * @expectedExceptionMessage The AppendStream can only seek with SEEK_SET
+     */
     public function testValidatesSeekType()
     {
         $a = new AppendStream();
-        $this->assertFalse($a->seek(100, SEEK_CUR));
+        $a->seek(100, SEEK_CUR);
     }
 
+    /**
+     * @expectedException \RuntimeException
+     * @expectedExceptionMessage Unable to seek stream 0 of the AppendStream
+     */
     public function testTriesToRewindOnSeek()
     {
         $a = new AppendStream();
-        $s = $this->getMockBuilder('Psr\Http\Message\StreamableInterface')
-            ->setMethods(['isReadable', 'seek', 'isSeekable'])
+        $s = $this->getMockBuilder('Psr\Http\Message\StreamInterface')
+            ->setMethods(['isReadable', 'rewind', 'isSeekable'])
             ->getMockForAbstractClass();
         $s->expects($this->once())
             ->method('isReadable')
@@ -41,10 +49,10 @@ class AppendStreamTest extends \PHPUnit_Framework_TestCase
             ->method('isSeekable')
             ->will($this->returnValue(true));
         $s->expects($this->once())
-            ->method('seek')
-            ->will($this->returnValue(false));
+            ->method('rewind')
+            ->will($this->throwException(new \RuntimeException()));
         $a->addStream($s);
-        $this->assertFalse($a->seek(10));
+        $a->seek(10);
     }
 
     public function testSeeksToPositionByReading()
@@ -55,7 +63,7 @@ class AppendStreamTest extends \PHPUnit_Framework_TestCase
             Psr7\stream_for('baz'),
         ]);
 
-        $this->assertTrue($a->seek(3));
+        $a->seek(3);
         $this->assertEquals(3, $a->tell());
         $this->assertEquals('bar', $a->read(3));
         $a->seek(6);
@@ -66,9 +74,9 @@ class AppendStreamTest extends \PHPUnit_Framework_TestCase
     public function testDetachesEachStream()
     {
         $s1 = Psr7\stream_for('foo');
-        $s2 = Psr7\stream_for('foo');
+        $s2 = Psr7\stream_for('bar');
         $a = new AppendStream([$s1, $s2]);
-        $this->assertSame('foofoo', (string) $a);
+        $this->assertSame('foobar', (string) $a);
         $a->detach();
         $this->assertSame('', (string) $a);
         $this->assertSame(0, $a->getSize());
@@ -82,13 +90,17 @@ class AppendStreamTest extends \PHPUnit_Framework_TestCase
         $this->assertSame('', (string) $a);
     }
 
+    /**
+     * @expectedExceptionMessage Cannot write to an AppendStream
+     * @expectedException \RuntimeException
+     */
     public function testIsNotWritable()
     {
         $a = new AppendStream([Psr7\stream_for('foo')]);
         $this->assertFalse($a->isWritable());
         $this->assertTrue($a->isSeekable());
         $this->assertTrue($a->isReadable());
-        $this->assertFalse($a->write('foo'));
+        $a->write('foo');
     }
 
     public function testDoesNotNeedStreams()
@@ -123,7 +135,7 @@ class AppendStreamTest extends \PHPUnit_Framework_TestCase
         ]);
         $this->assertEquals(6, $a->getSize());
 
-        $s = $this->getMockBuilder('Psr\Http\Message\StreamableInterface')
+        $s = $this->getMockBuilder('Psr\Http\Message\StreamInterface')
             ->setMethods(['isSeekable', 'isReadable'])
             ->getMockForAbstractClass();
         $s->expects($this->once())
@@ -138,9 +150,12 @@ class AppendStreamTest extends \PHPUnit_Framework_TestCase
 
     public function testCatchesExceptionsWhenCastingToString()
     {
-        $s = $this->getMockBuilder('Psr\Http\Message\StreamableInterface')
-            ->setMethods(['read', 'isReadable', 'eof'])
+        $s = $this->getMockBuilder('Psr\Http\Message\StreamInterface')
+            ->setMethods(['isSeekable', 'read', 'isReadable', 'eof'])
             ->getMockForAbstractClass();
+        $s->expects($this->once())
+            ->method('isSeekable')
+            ->will($this->returnValue(true));
         $s->expects($this->once())
             ->method('read')
             ->will($this->throwException(new \RuntimeException('foo')));

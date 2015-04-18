@@ -107,20 +107,29 @@ class RequestTest extends \PHPUnit_Framework_TestCase
         ], $r->getHeaders());
     }
 
-    public function testHardSetHostIsNotOverwrittenBySoftSet()
+    public function testCanGetHeaderAsCsv()
+    {
+        $r = new Request('GET', 'http://foo.com/baz?bar=bam', [
+            'Foo' => ['a', 'b', 'c']
+        ]);
+        $this->assertEquals('a, b, c', $r->getHeaderLine('Foo'));
+        $this->assertEquals('', $r->getHeaderLine('Bar'));
+    }
+
+    public function testHostIsNotOverwrittenWhenPreservingHost()
     {
         $r = new Request('GET', 'http://foo.com/baz?bar=bam', ['Host' => 'a.com']);
         $this->assertEquals(['Host' => ['a.com']], $r->getHeaders());
-        $r2 = $r->withUri(new Uri('http://www.foo.com/bar'));
-        $this->assertEquals('a.com', $r2->getHeader('Host'));
+        $r2 = $r->withUri(new Uri('http://www.foo.com/bar'), true);
+        $this->assertEquals('a.com', $r2->getHeaderLine('Host'));
     }
 
-    public function testOverridesSoftHostWithUri()
+    public function testOverridesHostWithUri()
     {
         $r = new Request('GET', 'http://foo.com/baz?bar=bam');
         $this->assertEquals(['Host' => ['foo.com']], $r->getHeaders());
         $r2 = $r->withUri(new Uri('http://www.baz.com/bar'));
-        $this->assertEquals('www.baz.com', $r2->getHeader('Host'));
+        $this->assertEquals('www.baz.com', $r2->getHeaderLine('Host'));
     }
 
     public function testAggregatesHeaders()
@@ -129,29 +138,19 @@ class RequestTest extends \PHPUnit_Framework_TestCase
             'ZOO' => 'zoobar',
             'zoo' => ['foobar', 'zoobar']
         ]);
-        $this->assertEquals('zoobar, foobar, zoobar', $r->getHeader('zoo'));
+        $this->assertEquals('zoobar, foobar, zoobar', $r->getHeaderLine('zoo'));
     }
 
     public function testAddsPortToHeader()
     {
         $r = new Request('GET', 'http://foo.com:8124/bar');
-        $this->assertEquals('foo.com:8124', $r->getHeader('host'));
+        $this->assertEquals('foo.com:8124', $r->getHeaderLine('host'));
     }
 
     public function testAddsPortToHeaderAndReplacePreviousPort()
     {
         $r = new Request('GET', 'http://foo.com:8124/bar');
         $r = $r->withUri(new Uri('http://foo.com:8125/bar'));
-        $this->assertEquals('foo.com:8125', $r->getHeader('host'));
-    }
-
-    public function testUpdatesHeaderAndRemovesSoft()
-    {
-        $r = new Request('GET', 'http://foo.com');
-        $this->assertEquals('foo.com', $r->getHeader('host'));
-        $r2 = $r->withHeader('Host', 'baz.com');
-        $this->assertEquals('baz.com', $r2->getHeader('host'));
-        $r3 = $r2->withUri(new Uri('http://bam.com'));
-        $this->assertEquals('baz.com', $r3->getHeader('host'));
+        $this->assertEquals('foo.com:8125', $r->getHeaderLine('host'));
     }
 }

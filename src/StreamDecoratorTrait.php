@@ -1,18 +1,18 @@
 <?php
 namespace GuzzleHttp\Psr7;
 
-use Psr\Http\Message\StreamableInterface;
+use Psr\Http\Message\StreamInterface;
 
 /**
  * Stream decorator trait
- * @property StreamableInterface stream
+ * @property StreamInterface stream
  */
 trait StreamDecoratorTrait
 {
     /**
-     * @param StreamableInterface $stream Stream to decorate
+     * @param StreamInterface $stream Stream to decorate
      */
-    public function __construct(StreamableInterface $stream)
+    public function __construct(StreamInterface $stream)
     {
         $this->stream = $stream;
     }
@@ -23,7 +23,7 @@ trait StreamDecoratorTrait
      *
      * @param string $name Name of the property (allows "stream" only).
      *
-     * @return StreamableInterface
+     * @return StreamInterface
      */
     public function __get($name)
     {
@@ -38,7 +38,9 @@ trait StreamDecoratorTrait
     public function __toString()
     {
         try {
-            $this->seek(0);
+            if ($this->isSeekable()) {
+                $this->seek(0);
+            }
             return $this->getContents();
         } catch (\Exception $e) {
             // Really, PHP? https://bugs.php.net/bug.php?id=53648
@@ -63,7 +65,7 @@ trait StreamDecoratorTrait
      */
     public function __call($method, array $args)
     {
-        $result = call_user_func_array(array($this->stream, $method), $args);
+        $result = call_user_func_array([$this->stream, $method], $args);
 
         // Always return the wrapped object if the result is a return $this
         return $result === $this->stream ? $this : $result;
@@ -116,12 +118,12 @@ trait StreamDecoratorTrait
 
     public function rewind()
     {
-        return $this->seek(0);
+        $this->seek(0);
     }
 
     public function seek($offset, $whence = SEEK_SET)
     {
-        return $this->stream->seek($offset, $whence);
+        $this->stream->seek($offset, $whence);
     }
 
     public function read($length)
@@ -137,7 +139,7 @@ trait StreamDecoratorTrait
     /**
      * Implement in subclasses to dynamically create streams when requested.
      *
-     * @return StreamableInterface
+     * @return StreamInterface
      * @throws \BadMethodCallException
      */
     protected function createStream()

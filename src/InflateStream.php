@@ -1,7 +1,7 @@
 <?php
 namespace GuzzleHttp\Psr7;
 
-use Psr\Http\Message\StreamableInterface;
+use Psr\Http\Message\StreamInterface;
 
 /**
  * Uses PHP's zlib.inflate filter to inflate deflate or gzipped content.
@@ -14,11 +14,11 @@ use Psr\Http\Message\StreamableInterface;
  * @link http://tools.ietf.org/html/rfc1952
  * @link http://php.net/manual/en/filters.compression.php
  */
-class InflateStream implements StreamableInterface
+class InflateStream implements StreamInterface
 {
     use StreamDecoratorTrait;
 
-    public function __construct(StreamableInterface $stream)
+    public function __construct(StreamInterface $stream)
     {
         // Skip the first 10 bytes
         $stream = new LimitStream($stream, -1, 10);

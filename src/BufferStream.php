@@ -1,7 +1,7 @@
 <?php
 namespace GuzzleHttp\Psr7;
 
-use Psr\Http\Message\StreamableInterface;
+use Psr\Http\Message\StreamInterface;
 
 /**
  * Provides a buffer stream that can be written to to fill a buffer, and read
@@ -11,7 +11,7 @@ use Psr\Http\Message\StreamableInterface;
  * what the configured high water mark of the stream is, or the maximum
  * preferred size of the buffer.
  */
-class BufferStream implements StreamableInterface
+class BufferStream implements StreamInterface
 {
     private $hwm;
     private $buffer = '';
@@ -73,12 +73,12 @@ class BufferStream implements StreamableInterface
 
     public function rewind()
     {
-        return $this->seek(0);
+        $this->seek(0);
     }
 
     public function seek($offset, $whence = SEEK_SET)
     {
-        return false;
+        throw new \RuntimeException('Cannot seek a BufferStream');
     }
 
     public function eof()
@@ -88,7 +88,7 @@ class BufferStream implements StreamableInterface
 
     public function tell()
     {
-        return false;
+        throw new \RuntimeException('Cannot determine the position of a BufferStream');
     }
 
     /**
@@ -118,6 +118,7 @@ class BufferStream implements StreamableInterface
     {
         $this->buffer .= $string;
 
+        // TODO: What should happen here?
         if (strlen($this->buffer) >= $this->hwm) {
             return false;
         }

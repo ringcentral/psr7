@@ -3,7 +3,7 @@ namespace GuzzleHttp\Psr7;
 
 use InvalidArgumentException;
 use Psr\Http\Message\RequestInterface;
-use Psr\Http\Message\StreamableInterface;
+use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UriInterface;
 
 /**
@@ -24,14 +24,11 @@ class Request implements RequestInterface
     /** @var null|UriInterface */
     private $uri;
 
-    /** @var bool */
-    private $softHost = false;
-
     /**
      * @param null|string $method HTTP method for the request.
      * @param null|string $uri URI for the request.
      * @param array  $headers Headers for the message.
-     * @param string|resource|StreamableInterface $body Message body.
+     * @param string|resource|StreamInterface $body Message body.
      * @param string $protocolVersion HTTP protocol version.
      *
      * @throws InvalidArgumentException for an invalid URI
@@ -55,7 +52,11 @@ class Request implements RequestInterface
         $this->uri = $uri;
         $this->setHeaders($headers);
         $this->protocol = $protocolVersion;
-        $this->updateHostFromUri();
+
+        $host = $uri->getHost();
+        if ($host && !$this->hasHeader('Host')) {
+            $this->updateHostFromUri($host);
+        }
 
         if ($body) {
             $this->stream = stream_for($body);
@@ -109,7 +110,7 @@ class Request implements RequestInterface
         return $this->uri;
     }
 
-    public function withUri(UriInterface $uri)
+    public function withUri(UriInterface $uri, $preserveHost = false)
     {
         if ($uri === $this->uri) {
             return $this;
@@ -117,7 +118,12 @@ class Request implements RequestInterface
 
         $new = clone $this;
         $new->uri = $uri;
-        $new->updateHostFromUri();
+        $host = $uri->getHost();
+
+        if ($host && (!$preserveHost || !$this->getHeader('Host'))) {
+            $new->updateHostFromUri($host);
+        }
+
         return $new;
     }
 
@@ -125,31 +131,18 @@ class Request implements RequestInterface
     {
         /** @var Request $newInstance */
         $newInstance = $this->withParentHeader($header, $value);
-        if ($newInstance->softHost && strtolower($header) === 'host') {
-            // If explicitly setting a Host header, then it isn't "soft".
-            $newInstance->softHost = false;
-        }
-
         return $newInstance;
     }
 
-    private function updateHostFromUri()
+    private function updateHostFromUri($host)
     {
-        if (!$this->softHost && $this->hasHeader('Host')) {
-            return;
+        // Ensure Host is the first header.
+        // See: http://tools.ietf.org/html/rfc7230#section-5.4
+        if ($port = $this->uri->getPort()) {
+            $host .= ':' . $port;
         }
 
-        // Set a default host header if one is not present.
-        if ($host = $this->uri->getHost()) {
-            // Mark as a soft header so it can be overridden by withUri().
-            $this->softHost = true;
-            // Ensure Host is the first header.
-            // See: http://tools.ietf.org/html/rfc7230#section-5.4
-            if ($port = $this->uri->getPort()) {
-                $host .= ':' . $port;
-            }
-            $this->headerLines = ['Host' => [$host]] + $this->headerLines;
-            $this->headers = ['host' => [$host]] + $this->headers;
-        }
+        $this->headerLines = ['Host' => [$host]] + $this->headerLines;
+        $this->headers = ['host' => [$host]] + $this->headers;
     }
 }

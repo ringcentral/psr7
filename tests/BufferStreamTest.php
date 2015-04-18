@@ -27,6 +27,10 @@ class BufferStreamTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('', $b->read(10));
     }
 
+    /**
+     * @expectedException \RuntimeException
+     * @expectedExceptionMessage Cannot determine the position of a BufferStream
+     */
     public function testCanCastToStringOrGetContents()
     {
         $b = new BufferStream();
@@ -35,7 +39,7 @@ class BufferStreamTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('foo', $b->read(3));
         $b->write('bar');
         $this->assertEquals('bazbar', (string) $b);
-        $this->assertFalse($b->tell());
+        $b->tell();
     }
 
     public function testDetachClearsBuffer()
@@ -43,7 +47,6 @@ class BufferStreamTest extends \PHPUnit_Framework_TestCase
         $b = new BufferStream();
         $b->write('foo');
         $b->detach();
-        $this->assertEquals(0, $b->tell());
         $this->assertTrue($b->eof());
         $this->assertEquals(3, $b->write('abc'));
         $this->assertEquals('abc', $b->read(10));

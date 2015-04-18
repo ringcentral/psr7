@@ -1,7 +1,7 @@
 <?php
 namespace GuzzleHttp\Psr7;
 
-use Psr\Http\Message\StreamableInterface;
+use Psr\Http\Message\StreamInterface;
 
 /**
  * Compose stream implementations based on a hash of functions.
@@ -9,7 +9,7 @@ use Psr\Http\Message\StreamableInterface;
  * Allows for easy testing and extension of a provided stream without needing
  * to create a concrete class for a simple extension point.
  */
-class FnStream implements StreamableInterface
+class FnStream implements StreamInterface
 {
     /** @var array */
     private $methods;
@@ -56,12 +56,12 @@ class FnStream implements StreamableInterface
      * Adds custom functionality to an underlying stream by intercepting
      * specific method calls.
      *
-     * @param StreamableInterface $stream  Stream to decorate
+     * @param StreamInterface $stream  Stream to decorate
      * @param array           $methods Hash of method name to a closure
      *
      * @return FnStream
      */
-    public static function decorate(StreamableInterface $stream, array $methods)
+    public static function decorate(StreamInterface $stream, array $methods)
     {
         // If any of the required methods were not provided, then simply
         // proxy to the decorated stream.
@@ -109,12 +109,12 @@ class FnStream implements StreamableInterface
 
     public function rewind()
     {
-        return call_user_func($this->_fn_rewind);
+        call_user_func($this->_fn_rewind);
     }
 
     public function seek($offset, $whence = SEEK_SET)
     {
-        return call_user_func($this->_fn_seek, $offset, $whence);
+        call_user_func($this->_fn_seek, $offset, $whence);
     }
 
     public function isWritable()
