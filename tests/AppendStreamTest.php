@@ -66,6 +66,7 @@ class AppendStreamTest extends \PHPUnit_Framework_TestCase
         $a->seek(3);
         $this->assertEquals(3, $a->tell());
         $this->assertEquals('bar', $a->read(3));
+
         $a->seek(6);
         $this->assertEquals(6, $a->tell());
         $this->assertEquals('baz', $a->read(3));

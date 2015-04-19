@@ -176,20 +176,27 @@ class AppendStream implements StreamInterface
         $buffer = '';
         $total = count($this->streams) - 1;
         $remaining = $length;
+        $progressToNext = false;
 
         while ($remaining > 0) {
+
             // Progress to the next stream if needed.
-            if ($this->streams[$this->current]->eof()) {
+            if ($progressToNext || $this->streams[$this->current]->eof()) {
+                $progressToNext = false;
                 if ($this->current === $total) {
                     break;
                 }
                 $this->current++;
             }
+
             $result = $this->streams[$this->current]->read($remaining);
+
             // Using a loose comparison here to match on '', false, and null
             if ($result == null) {
-                break;
+                $progressToNext = true;
+                continue;
             }
+
             $buffer .= $result;
             $remaining = $length - strlen($buffer);
         }
