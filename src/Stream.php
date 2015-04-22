@@ -89,13 +89,12 @@ class Stream implements StreamInterface
 
     public function __toString()
     {
-        if (!isset($this->stream)) {
+        try {
+            $this->seek(0);
+            return (string) stream_get_contents($this->stream);
+        } catch (\Exception $e) {
             return '';
         }
-
-        $this->seek(0);
-
-        return (string) stream_get_contents($this->stream);
     }
 
     public function getContents()

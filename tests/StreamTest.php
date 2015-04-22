@@ -1,6 +1,7 @@
 <?php
 namespace GuzzleHttp\Tests\Psr7;
 
+use GuzzleHttp\Psr7\NoSeekStream;
 use GuzzleHttp\Psr7\Stream;
 
 /**
@@ -149,5 +150,12 @@ class StreamTest extends \PHPUnit_Framework_TestCase
         $this->assertFalse($stream->isWritable());
         $this->assertNull($stream->getSize());
         $this->assertEmpty($stream->getMetadata());
+    }
+
+    public function testDoesNotThrowInToString()
+    {
+        $s = \GuzzleHttp\Psr7\stream_for('foo');
+        $s = new NoSeekStream($s);
+        $this->assertEquals('foo', (string) $s);
     }
 }
