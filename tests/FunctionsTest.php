@@ -518,7 +518,7 @@ class FunctionsTest extends \PHPUnit_Framework_TestCase
         $body = Psr7\stream_for('abc');
         $body->read(1);
         $body = FnStream::decorate($body, [
-            'rewind' => function () { return false; }
+            'rewind' => function () { throw new \RuntimeException('a'); }
         ]);
         $res = new Psr7\Response(200, [], $body);
         Psr7\rewind_body($res);

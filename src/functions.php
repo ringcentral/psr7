@@ -242,8 +242,9 @@ function modify_request(RequestInterface $request, array $changes)
 function rewind_body(MessageInterface $message)
 {
     $body = $message->getBody();
-    if ($body->tell() && !$body->rewind()) {
-        throw new \RuntimeException('Unable to rewind body');
+
+    if ($body->tell()) {
+        $body->rewind();
     }
 }
 
