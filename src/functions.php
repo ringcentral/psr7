@@ -213,8 +213,8 @@ function modify_request(RequestInterface $request, array $changes)
     }
 
     if (!empty($changes['set_headers'])) {
-        _caseless_remove(array_keys($changes['set_headers']), $headers);
-        $headers = $headers = $changes['set_headers'] + $headers;
+        $headers = _caseless_remove(array_keys($changes['set_headers']), $headers);
+        $headers = $changes['set_headers'] + $headers;
     }
 
     if (isset($changes['query'])) {
@@ -782,7 +782,7 @@ function _caseless_remove($keys, array $data)
     }
 
     foreach ($data as $k => $v) {
-        if (!in_array($k, $keys)) {
+        if (!in_array(strtolower($k), $keys)) {
             $result[$k] = $v;
         }
     }

@@ -534,6 +534,14 @@ class FunctionsTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('www.foo.com', (string) $r2->getHeaderLine('host'));
     }
 
+    public function testCanModifyRequestWithCaseInsensitiveHeader()
+    {
+        $r1 = new Psr7\Request('GET', 'http://foo.com', ['User-Agent' => 'foo']);
+        $r2 = Psr7\modify_request($r1, ['set_headers' => ['User-agent' => 'bar']]);
+        $this->assertEquals('bar', $r2->getHeaderLine('User-Agent'));
+        $this->assertEquals('bar', $r2->getHeaderLine('User-agent'));
+    }
+
     public function testReturnsAsIsWhenNoChanges()
     {
         $request = new Psr7\Request('GET', 'http://foo.com');

@@ -66,8 +66,9 @@ trait MessageTrait
         if (!is_array($value)) {
             $new->headers[$name] = [trim($value)];
         } else {
-            foreach ($value as $v) {
-                $new->headers[$name][] = trim($v);
+            $new->headers[$name] = $value;
+            foreach ($new->headers[$name] as &$v) {
+                $v = trim($v);
             }
         }
 
