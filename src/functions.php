@@ -41,7 +41,12 @@ function str(MessageInterface $message)
 /**
  * Returns a UriInterface for the given value.
  *
+ * This function accepts a string or {@see Psr\Http\Message\UriInterface} and
+ * returns a UriInterface for the given value. If the value is already a
+ * `UriInterface`, it is returned as-is.
+ *
  * @param string|UriInterface $uri
+ *
  * @return UriInterface
  * @throws \InvalidArgumentException
  */
@@ -234,6 +239,9 @@ function modify_request(RequestInterface $request, array $changes)
 
 /**
  * Attempts to rewind a message body and throws an exception on failure.
+ *
+ * The body of the message will only be rewound if a call to `tell()` returns a
+ * value other than `0`.
  *
  * @param MessageInterface $message Message to rewind
  *
