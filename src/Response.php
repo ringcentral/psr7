@@ -72,7 +72,7 @@ class Response implements ResponseInterface
     ];
 
     /** @var null|string */
-    private $reasonPhrase;
+    private $reasonPhrase = '';
 
     /** @var int */
     private $statusCode = 200;
@@ -117,7 +117,7 @@ class Response implements ResponseInterface
         return $this->reasonPhrase;
     }
 
-    public function withStatus($code, $reasonPhrase = null)
+    public function withStatus($code, $reasonPhrase = '')
     {
         $new = clone $this;
         $new->statusCode = (int) $code;

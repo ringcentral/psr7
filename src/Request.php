@@ -118,10 +118,11 @@ class Request implements RequestInterface
 
         $new = clone $this;
         $new->uri = $uri;
-        $host = $uri->getHost();
 
-        if ($host && (!$preserveHost || !$this->getHeader('Host'))) {
-            $new->updateHostFromUri($host);
+        if (!$preserveHost) {
+            if ($host = $uri->getHost()) {
+                $new->updateHostFromUri($host);
+            }
         }
 
         return $new;
