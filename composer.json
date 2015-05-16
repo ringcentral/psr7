@@ -18,6 +18,9 @@
         "phpunit/phpunit": "^4.0",
         "psr/http-message": "^0.11"
     },
+    "provide": {
+        "psr/http-message-implementation": "0.11"
+    },
     "autoload": {
         "psr-4": {
             "GuzzleHttp\\Psr7\\": "src/"
