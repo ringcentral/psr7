@@ -328,7 +328,7 @@ is returned as-is.
 ```php
 $uri = GuzzleHttp\Psr7\uri_for('http://example.com');
 assert($uri === GuzzleHttp\Psr7\uri_for($uri));
-``
+```
 
 
 ## `function stream_for`
