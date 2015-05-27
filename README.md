@@ -20,8 +20,8 @@ Reads from multiple streams, one after the other.
 ```php
 use GuzzleHttp\Psr7;
 
-$a = Psr7\steam_for('abc, ');
-$b = Psr7\steam_for('123.');
+$a = Psr7\stream_for('abc, ');
+$b = Psr7\stream_for('123.');
 $composed = new Psr7\AppendStream([$a, $b]);
 
 $composed->addStream(Psr7\stream_for(' Above all listen to me').
