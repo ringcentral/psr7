@@ -1,8 +1,9 @@
 # PSR-7 Message Implementation
 
-This repository contains a [PSR-7](http://www.php-fig.org/psr/psr-7/)
+This repository contains a partial [PSR-7](http://www.php-fig.org/psr/psr-7/)
 message implementation, several stream decorators, and some helpful
-functionality like query string parsing.
+functionality like query string parsing.  Currently missing
+ServerRequestInterface and UploadedFileInterface; a pull request for these features is welcome.
 
 
 # Stream implementation
