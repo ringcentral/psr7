@@ -12,7 +12,7 @@ use Psr\Http\Message\UriInterface;
 class Request implements RequestInterface
 {
     use MessageTrait {
-        withHeader as withParentHeader;
+        withHeader as protected withParentHeader;
     }
 
     /** @var string */
