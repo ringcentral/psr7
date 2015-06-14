@@ -194,4 +194,32 @@ class UriTest extends \PHPUnit_Framework_TestCase
         $uri = new Uri('http://foo.co');
         $this->assertEquals('foo.co', $uri->getAuthority());
     }
+
+    public function pathTestProvider()
+    {
+        return [
+            // Percent encode spaces.
+            ['http://foo.com/baz bar', 'http://foo.com/baz%20bar'],
+            // Don't encoding something that's already encoded.
+            ['http://foo.com/baz%20bar', 'http://foo.com/baz%20bar'],
+            // Percent encode invalid percent encodings
+            ['http://foo.com/baz%2-bar', 'http://foo.com/baz%252-bar'],
+            // Don't encode path segments
+            ['http://foo.com/baz/bar/bam?a', 'http://foo.com/baz/bar/bam?a'],
+            ['http://foo.com/baz+bar', 'http://foo.com/baz+bar'],
+            ['http://foo.com/baz:bar', 'http://foo.com/baz:bar'],
+            ['http://foo.com/baz@bar', 'http://foo.com/baz@bar'],
+            ['http://foo.com/baz(bar);bam/', 'http://foo.com/baz(bar);bam/'],
+            ['http://foo.com/a-zA-Z0-9.-_~!$&\'()*+,;=:@', 'http://foo.com/a-zA-Z0-9.-_~!$&\'()*+,;=:@'],
+        ];
+    }
+
+    /**
+     * @dataProvider pathTestProvider
+     */
+    public function testUriEncodesPathProperly($input, $output)
+    {
+        $uri = new Uri($input);
+        $this->assertEquals((string) $uri, $output);
+    }
 }
