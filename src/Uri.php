@@ -576,7 +576,7 @@ class Uri implements UriInterface
 
         return preg_replace_callback(
             '/(?:[^' . self::$charUnreserved . ':@&=\+\$,\/;%]+|%(?![A-Fa-f0-9]{2}))/',
-            function ($match) { return rawurlencode($match[0]); },
+            [$this, 'rawurlencodeMatchZero'],
             $path
         );
     }
@@ -592,8 +592,13 @@ class Uri implements UriInterface
     {
         return preg_replace_callback(
             '/(?:[^' . self::$charUnreserved . self::$charSubDelims . '%:@\/\?]+|%(?![A-Fa-f0-9]{2}))/',
-            function ($match) { return rawurlencode($match[0]); },
+            [$this, 'rawurlencodeMatchZero'],
             $str
         );
+    }
+
+    private function rawurlencodeMatchZero(array $match)
+    {
+        return rawurlencode($match[0]);
     }
 }
