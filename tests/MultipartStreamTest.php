@@ -187,7 +187,7 @@ EOT;
             [
                 'name'     => 'foo',
                 'contents' => $f2,
-                'headers'  => ['content-type' => 'custom'],
+                'headers'  => ['cOntenT-Type' => 'custom'],
             ]
         ], 'boundary');
 
@@ -200,7 +200,7 @@ Content-Type: text/plain
 
 foo
 --boundary
-content-type: custom
+cOntenT-Type: custom
 Content-Disposition: form-data; name="foo"; filename="baz.jpg"
 Content-Length: 3
 

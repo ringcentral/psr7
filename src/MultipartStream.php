@@ -141,8 +141,9 @@ class MultipartStream implements StreamInterface
 
     private function getHeader(array $headers, $key)
     {
+        $lowercaseHeader = strtolower($key);
         foreach ($headers as $k => $v) {
-            if ($k === $key) {
+            if (strtolower($k) === $lowercaseHeader) {
                 return $v;
             }
         }
