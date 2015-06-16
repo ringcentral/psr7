@@ -87,9 +87,10 @@ class RequestTest extends \PHPUnit_Framework_TestCase
     {
         $r1 = new Request('GET', '');
         $this->assertEquals('/', $r1->getRequestTarget());
-
-        $r2 = new Request('GET', '0');
-        $this->assertEquals('/0', $r2->getRequestTarget());
+        $r2 = new Request('GET', '*');
+        $this->assertEquals('*', $r2->getRequestTarget());
+        $r3 = new Request('GET', 'http://foo.com/bar baz/');
+        $this->assertEquals('/bar%20baz/', $r3->getRequestTarget());
     }
 
     public function testBuildsRequestTarget()

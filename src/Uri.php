@@ -392,6 +392,12 @@ class Uri implements UriInterface
             return $this;
         }
 
+        // Start the path to '/' if there is a host. It's the only way this
+        // would represent a valid URI.
+        if ($this->host && strlen($path) && $path[0] !== '/') {
+            $path = '/' . $path;
+        }
+
         $new = clone $this;
         $new->path = $path;
         return $new;
@@ -453,9 +459,14 @@ class Uri implements UriInterface
         $this->port = !empty($parts['port'])
             ? $this->filterPort($this->scheme, $this->host, $parts['port'])
             : null;
-        $this->path = isset($parts['path'])
-            ? $this->filterPath($parts['path'])
-            : '';
+        if (isset($parts['path']) && $parts['path'] !== '') {
+            $this->path = $this->filterPath($parts['path']);
+            // Start the path to '/' if there is a host. It's the only way this
+            // would represent a valid URI.
+            if ($this->host && substr($this->path, 0, 1) !== '/') {
+                $this->path = '/' . $this->path;
+            }
+        }
         $this->query = isset($parts['query'])
             ? $this->filterQueryAndFragment($parts['query'])
             : '';
@@ -570,10 +581,6 @@ class Uri implements UriInterface
      */
     private function filterPath($path)
     {
-        if ($path != null && substr($path, 0, 1) !== '/') {
-            $path = '/' . $path;
-        }
-
         return preg_replace_callback(
             '/(?:[^' . self::$charUnreserved . self::$charSubDelims . ':@\/%]+|%(?![A-Fa-f0-9]{2}))/',
             [$this, 'rawurlencodeMatchZero'],

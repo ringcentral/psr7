@@ -93,12 +93,12 @@ class UriTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('0', (string) $url->getQuery());
         $this->assertSame('0', $url->getFragment());
         $this->assertEquals('http://a:1/0?0#0', (string) $url);
-
         $url = new Uri('');
         $this->assertSame('', (string) $url);
-
         $url = new Uri('0');
-        $this->assertSame('/0', (string) $url);
+        $this->assertSame('0', (string) $url);
+        $url = new Uri('/');
+        $this->assertSame('/', (string) $url);
     }
 
     /**
@@ -221,5 +221,49 @@ class UriTest extends \PHPUnit_Framework_TestCase
     {
         $uri = new Uri($input);
         $this->assertEquals((string) $uri, $output);
+    }
+
+    public function testAddSlashToPathWhenHostAndNoLeadingSlash()
+    {
+        $uri = (new Uri(''))
+            ->withScheme('http')
+            ->withHost('example.com')
+            ->withPath('path/123');
+        $this->assertEquals('/path/123', $uri->getPath());
+        $this->assertEquals('http://example.com/path/123', (string) $uri);
+    }
+
+    public function testAddSlashToPathWhenApplyingPartsIfNeeded()
+    {
+        $uri = Uri::fromParts([
+            'scheme' => 'http',
+            'host' => 'example.com',
+            'path' => 'path/123'
+        ]);
+        $this->assertEquals('/path/123', $uri->getPath());
+        $this->assertEquals('http://example.com/path/123', (string) $uri);
+    }
+
+    public function testDoesNotAddSlashWhenPathIsEmpty()
+    {
+        $uri = Uri::fromParts([
+            'scheme' => 'http',
+            'host' => 'example.com',
+            'path' => '',
+            'query' => 'foo'
+        ]);
+        $this->assertEquals('', $uri->getPath());
+        $this->assertEquals('http://example.com?foo', (string) $uri);
+    }
+
+    public function testDoesNotAddSlashToPathWhenEmptyAndHostIsPresent()
+    {
+        $uri = (new Uri(''))
+            ->withScheme('http')
+            ->withHost('example.com')
+            ->withPath('')
+            ->withQuery('foo');
+        $this->assertEquals('', $uri->getPath());
+        $this->assertEquals('http://example.com?foo', (string) $uri);
     }
 }
