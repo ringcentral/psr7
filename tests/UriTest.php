@@ -53,7 +53,7 @@ class UriTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('user:pass@example.com:8080', $uri->getAuthority());
         $this->assertEquals('test', $uri->getFragment());
         $this->assertEquals('example.com', $uri->getHost());
-        $this->assertEquals('/path/123', $uri->getPath());
+        $this->assertEquals('path/123', $uri->getPath());
         $this->assertEquals(8080, $uri->getPort());
         $this->assertEquals('q=abc', $uri->getQuery());
         $this->assertEquals('http', $uri->getScheme());
@@ -223,53 +223,23 @@ class UriTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals((string) $uri, $output);
     }
 
-    public function testAddSlashToPathWhenHostAndNoLeadingSlash()
-    {
-        $uri = (new Uri(''))
-            ->withScheme('http')
-            ->withHost('example.com')
-            ->withPath('path/123');
-        $this->assertEquals('/path/123', $uri->getPath());
-        $this->assertEquals('http://example.com/path/123', (string) $uri);
-    }
-
-    public function testAddSlashToPathWhenApplyingPartsIfNeeded()
-    {
-        $uri = Uri::fromParts([
-            'scheme' => 'http',
-            'host' => 'example.com',
-            'path' => 'path/123'
-        ]);
-        $this->assertEquals('/path/123', $uri->getPath());
-        $this->assertEquals('http://example.com/path/123', (string) $uri);
-    }
-
-    public function testDoesNotAddSlashWhenPathIsEmpty()
-    {
-        $uri = Uri::fromParts([
-            'scheme' => 'http',
-            'host' => 'example.com',
-            'path' => '',
-            'query' => 'foo'
-        ]);
-        $this->assertEquals('', $uri->getPath());
-        $this->assertEquals('http://example.com?foo', (string) $uri);
-    }
-
-    public function testDoesNotAddSlashToPathWhenEmptyAndHostIsPresent()
-    {
-        $uri = (new Uri(''))
-            ->withScheme('http')
-            ->withHost('example.com')
-            ->withPath('')
-            ->withQuery('foo');
-        $this->assertEquals('', $uri->getPath());
-        $this->assertEquals('http://example.com?foo', (string) $uri);
-    }
-
     public function testDoesNotAddPortWhenNoPort()
     {
         $this->assertEquals('bar', new Uri('//bar'));
         $this->assertEquals('bar', (new Uri('//bar'))->getHost());
+    }
+
+    public function testAllowsForRelativeUri()
+    {
+        $uri = (new Uri)->withPath('foo');
+        $this->assertEquals('foo', $uri->getPath());
+        $this->assertEquals('foo', (string) $uri);
+    }
+
+    public function testAddsSlashForRelativeUriStringWithHost()
+    {
+        $uri = (new Uri)->withPath('foo')->withHost('bar.com');
+        $this->assertEquals('foo', $uri->getPath());
+        $this->assertEquals('bar.com/foo', (string) $uri);
     }
 }
