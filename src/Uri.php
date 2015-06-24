@@ -525,7 +525,7 @@ class Uri implements UriInterface
      */
     private static function isNonStandardPort($scheme, $host, $port)
     {
-        if (!$scheme) {
+        if (!$scheme && $port) {
             return true;
         }
 

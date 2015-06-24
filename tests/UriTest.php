@@ -266,4 +266,10 @@ class UriTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('', $uri->getPath());
         $this->assertEquals('http://example.com?foo', (string) $uri);
     }
+
+    public function testDoesNotAddPortWhenNoPort()
+    {
+        $this->assertEquals('bar', new Uri('//bar'));
+        $this->assertEquals('bar', (new Uri('//bar'))->getHost());
+    }
 }
