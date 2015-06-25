@@ -41,11 +41,6 @@ class CachingStream implements StreamInterface
         $this->seek(0);
     }
 
-    /**
-     * {@inheritdoc}
-     * @throws \RuntimeException When seeking with SEEK_END or when seeking
-     *     past the total size of the buffer stream
-     */
     public function seek($offset, $whence = SEEK_SET)
     {
         if ($whence == SEEK_SET) {
