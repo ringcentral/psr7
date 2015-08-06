@@ -447,13 +447,15 @@ function parse_request($message)
     $parts = explode(' ', $data['start-line'], 3);
     $version = isset($parts[2]) ? explode('/', $parts[2])[1] : '1.1';
 
-    return new Request(
+    $request = new Request(
         $parts[0],
         $matches[1] === '/' ? _parse_request_uri($parts[1], $data['headers']) : $parts[1],
         $data['headers'],
         $data['body'],
         $version
     );
+
+    return $matches[1] === '/' ? $request : $request->withRequestTarget($parts[1]);
 }
 
 /**

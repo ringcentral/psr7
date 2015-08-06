@@ -275,7 +275,7 @@ class FunctionsTest extends \PHPUnit_Framework_TestCase
         $req = "GET https://www.google.com:443/search?q=foobar HTTP/1.1\r\nHost: www.google.com\r\n\r\n";
         $request = Psr7\parse_request($req);
         $this->assertEquals('GET', $request->getMethod());
-        $this->assertEquals('/search?q=foobar', $request->getRequestTarget());
+        $this->assertEquals('https://www.google.com:443/search?q=foobar', $request->getRequestTarget());
         $this->assertEquals('1.1', $request->getProtocolVersion());
         $this->assertEquals('www.google.com', $request->getHeaderLine('Host'));
         $this->assertEquals('', (string) $request->getBody());
