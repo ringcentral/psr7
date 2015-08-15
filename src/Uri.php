@@ -124,7 +124,12 @@ class Uri implements UriInterface
         }
 
         if (!($rel instanceof UriInterface)) {
-            $rel = new static($rel);
+            $rel = new self($rel);
+        }
+
+        // Return the relative uri as-is if it has a scheme.
+        if ($rel->getScheme()) {
+            return $rel->withPath(static::removeDotSegments($rel->getPath()));
         }
 
         $relParts = [
@@ -134,16 +139,6 @@ class Uri implements UriInterface
             'query'     => $rel->getQuery(),
             'fragment'  => $rel->getFragment()
         ];
-
-        if (!empty($relParts['scheme'])) {
-            return static::createUriString(
-                $relParts['scheme'],
-                $relParts['authority'],
-                self::removeDotSegments($relParts['path']),
-                $relParts['query'],
-                $relParts['fragment']
-            );
-        }
 
         $parts = [
             'scheme'    => $base->getScheme(),
@@ -179,13 +174,13 @@ class Uri implements UriInterface
             $parts['fragment'] = $relParts['fragment'];
         }
 
-        return static::createUriString(
+        return new self(static::createUriString(
             $parts['scheme'],
             $parts['authority'],
             $parts['path'],
             $parts['query'],
             $parts['fragment']
-        );
+        ));
     }
 
     /**
