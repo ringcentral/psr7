@@ -1,9 +1,9 @@
 <?php
-namespace GuzzleHttp\Tests\Psr7;
+namespace RingCentral\Tests\Psr7;
 
-use GuzzleHttp\Psr7;
-use GuzzleHttp\Psr7\FnStream;
-use GuzzleHttp\Psr7\NoSeekStream;
+use RingCentral\Psr7;
+use RingCentral\Psr7\FnStream;
+use RingCentral\Psr7\NoSeekStream;
 
 class FunctionsTest extends \PHPUnit_Framework_TestCase
 {
@@ -85,7 +85,7 @@ class FunctionsTest extends \PHPUnit_Framework_TestCase
 
     public function testReadsLineUntilFalseReturnedFromRead()
     {
-        $s = $this->getMockBuilder('GuzzleHttp\Psr7\Stream')
+        $s = $this->getMockBuilder('RingCentral\Psr7\Stream')
             ->setMethods(array('read', 'eof'))
             ->disableOriginalConstructor()
             ->getMock();
@@ -325,9 +325,9 @@ class FunctionsTest extends \PHPUnit_Framework_TestCase
 
     public function testCreatesUriForValue()
     {
-        $this->assertInstanceOf('GuzzleHttp\Psr7\Uri', Psr7\uri_for('/foo'));
+        $this->assertInstanceOf('RingCentral\Psr7\Uri', Psr7\uri_for('/foo'));
         $this->assertInstanceOf(
-            'GuzzleHttp\Psr7\Uri',
+            'RingCentral\Psr7\Uri',
             Psr7\uri_for(new Psr7\Uri('/foo'))
         );
     }
@@ -352,7 +352,7 @@ class FunctionsTest extends \PHPUnit_Framework_TestCase
     public function testCreatesWithFactory()
     {
         $stream = Psr7\stream_for('foo');
-        $this->assertInstanceOf('GuzzleHttp\Psr7\Stream', $stream);
+        $this->assertInstanceOf('RingCentral\Psr7\Stream', $stream);
         $this->assertEquals('foo', $stream->getContents());
         $stream->close();
     }
@@ -360,20 +360,20 @@ class FunctionsTest extends \PHPUnit_Framework_TestCase
     public function testFactoryCreatesFromEmptyString()
     {
         $s = Psr7\stream_for();
-        $this->assertInstanceOf('GuzzleHttp\Psr7\Stream', $s);
+        $this->assertInstanceOf('RingCentral\Psr7\Stream', $s);
     }
 
     public function testFactoryCreatesFromNull()
     {
         $s = Psr7\stream_for(null);
-        $this->assertInstanceOf('GuzzleHttp\Psr7\Stream', $s);
+        $this->assertInstanceOf('RingCentral\Psr7\Stream', $s);
     }
 
     public function testFactoryCreatesFromResource()
     {
         $r = fopen(__FILE__, 'r');
         $s = Psr7\stream_for($r);
-        $this->assertInstanceOf('GuzzleHttp\Psr7\Stream', $s);
+        $this->assertInstanceOf('RingCentral\Psr7\Stream', $s);
         $this->assertSame(file_get_contents(__FILE__), (string) $s);
     }
 
@@ -381,7 +381,7 @@ class FunctionsTest extends \PHPUnit_Framework_TestCase
     {
         $r = new HasToString();
         $s = Psr7\stream_for($r);
-        $this->assertInstanceOf('GuzzleHttp\Psr7\Stream', $s);
+        $this->assertInstanceOf('RingCentral\Psr7\Stream', $s);
         $this->assertEquals('foo', (string) $s);
     }
 
@@ -416,7 +416,7 @@ class FunctionsTest extends \PHPUnit_Framework_TestCase
     {
         $a = new \ArrayIterator(array('foo', 'bar', '123'));
         $p = Psr7\stream_for($a);
-        $this->assertInstanceOf('GuzzleHttp\Psr7\PumpStream', $p);
+        $this->assertInstanceOf('RingCentral\Psr7\PumpStream', $p);
         $this->assertEquals('foo', $p->read(3));
         $this->assertFalse($p->eof());
         $this->assertEquals('b', $p->read(1));

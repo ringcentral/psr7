@@ -1,12 +1,12 @@
 <?php
-namespace GuzzleHttp\Tests\Psr7;
+namespace RingCentral\Tests\Psr7;
 
-use GuzzleHttp\Psr7;
-use GuzzleHttp\Psr7\NoSeekStream;
+use RingCentral\Psr7;
+use RingCentral\Psr7\NoSeekStream;
 
 /**
- * @covers GuzzleHttp\Psr7\NoSeekStream
- * @covers GuzzleHttp\Psr7\StreamDecoratorTrait
+ * @covers RingCentral\Psr7\NoSeekStream
+ * @covers RingCentral\Psr7\StreamDecoratorTrait
  */
 class NoSeekStreamTest extends \PHPUnit_Framework_TestCase
 {

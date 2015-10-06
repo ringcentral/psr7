@@ -1,9 +1,9 @@
 <?php
-namespace GuzzleHttp\Tests\Psr7;
+namespace RingCentral\Tests\Psr7;
 
-use GuzzleHttp\Psr7\LimitStream;
-use GuzzleHttp\Psr7\PumpStream;
-use GuzzleHttp\Psr7;
+use RingCentral\Psr7\LimitStream;
+use RingCentral\Psr7\PumpStream;
+use RingCentral\Psr7;
 
 class PumpStreamTest extends \PHPUnit_Framework_TestCase
 {

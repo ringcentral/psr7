@@ -1,8 +1,8 @@
 <?php
-namespace GuzzleHttp\Tests;
+namespace RingCentral\Tests;
 
-use GuzzleHttp\Psr7;
-use GuzzleHttp\Psr7\MultipartStream;
+use RingCentral\Psr7;
+use RingCentral\Psr7\MultipartStream;
 
 class MultipartStreamTest extends \PHPUnit_Framework_TestCase
 {

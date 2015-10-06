@@ -1,7 +1,7 @@
 <?php
-namespace GuzzleHttp\Tests\Psr7;
+namespace RingCentral\Tests\Psr7;
 
-use GuzzleHttp\Psr7\BufferStream;
+use RingCentral\Psr7\BufferStream;
 
 class BufferStreamTest extends \PHPUnit_Framework_TestCase
 {

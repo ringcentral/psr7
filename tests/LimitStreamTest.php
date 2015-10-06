@@ -1,14 +1,14 @@
 <?php
-namespace GuzzleHttp\Tests\Psr7;
+namespace RingCentral\Tests\Psr7;
 
-use GuzzleHttp\Psr7;
-use GuzzleHttp\Psr7\FnStream;
-use GuzzleHttp\Psr7\Stream;
-use GuzzleHttp\Psr7\LimitStream;
-use GuzzleHttp\Psr7\NoSeekStream;
+use RingCentral\Psr7;
+use RingCentral\Psr7\FnStream;
+use RingCentral\Psr7\Stream;
+use RingCentral\Psr7\LimitStream;
+use RingCentral\Psr7\NoSeekStream;
 
 /**
- * @covers GuzzleHttp\Psr7\LimitStream
+ * @covers RingCentral\Psr7\LimitStream
  */
 class LimitStreamTest extends \PHPUnit_Framework_TestCase
 {

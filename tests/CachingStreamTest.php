@@ -1,11 +1,11 @@
 <?php
-namespace GuzzleHttp\Tests\Psr7;
+namespace RingCentral\Tests\Psr7;
 
-use GuzzleHttp\Psr7;
-use GuzzleHttp\Psr7\CachingStream;
+use RingCentral\Psr7;
+use RingCentral\Psr7\CachingStream;
 
 /**
- * @covers GuzzleHttp\Psr7\CachingStream
+ * @covers RingCentral\Psr7\CachingStream
  */
 class CachingStreamTest extends \PHPUnit_Framework_TestCase
 {
@@ -74,7 +74,7 @@ class CachingStreamTest extends \PHPUnit_Framework_TestCase
     public function testRewindUsesSeek()
     {
         $a = Psr7\stream_for('foo');
-        $d = $this->getMockBuilder('GuzzleHttp\Psr7\CachingStream')
+        $d = $this->getMockBuilder('RingCentral\Psr7\CachingStream')
             ->setMethods(array('seek'))
             ->setConstructorArgs(array($a))
             ->getMock();

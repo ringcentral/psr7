@@ -1,5 +1,5 @@
 {
-    "name": "guzzlehttp/psr7",
+    "name": "ringcentral/psr7",
     "type": "library",
     "description": "PSR-7 message implementation",
     "keywords": ["message", "stream", "http", "uri"],
@@ -23,7 +23,7 @@
     },
     "autoload": {
         "psr-4": {
-            "GuzzleHttp\\Psr7\\": "src/"
+            "RingCentral\\Psr7\\": "src/"
         },
         "files": ["src/functions_include.php"]
     },

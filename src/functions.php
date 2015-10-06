@@ -1,5 +1,5 @@
 <?php
-namespace GuzzleHttp\Psr7;
+namespace RingCentral\Psr7;
 
 use Psr\Http\Message\MessageInterface;
 use Psr\Http\Message\RequestInterface;
@@ -445,7 +445,7 @@ function readline(StreamInterface $stream, $maxLength = null)
 function parse_request($message)
 {
     $data = _parse_message($message);
-    $matches = [];
+    $matches = array();
     if (!preg_match('/^[a-zA-Z]+\s+([a-zA-Z]+:\/\/|\/).*/', $data['start-line'], $matches)) {
         throw new \InvalidArgumentException('Invalid request string');
     }

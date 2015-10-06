@@ -1,11 +1,11 @@
 <?php
-namespace GuzzleHttp\Tests\Psr7;
+namespace RingCentral\Tests\Psr7;
 
-use GuzzleHttp\Psr7\StreamWrapper;
-use GuzzleHttp\Psr7;
+use RingCentral\Psr7\StreamWrapper;
+use RingCentral\Psr7;
 
 /**
- * @covers GuzzleHttp\Psr7\StreamWrapper
+ * @covers RingCentral\Psr7\StreamWrapper
  */
 class StreamWrapperTest extends \PHPUnit_Framework_TestCase
 {

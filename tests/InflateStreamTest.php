@@ -1,8 +1,8 @@
 <?php
-namespace GuzzleHttp\Tests\Psr7;
+namespace RingCentral\Tests\Psr7;
 
-use GuzzleHttp\Psr7;
-use GuzzleHttp\Psr7\InflateStream;
+use RingCentral\Psr7;
+use RingCentral\Psr7\InflateStream;
 
 function php53_gzencode($data)
 {

@@ -1,12 +1,12 @@
 <?php
-namespace GuzzleHttp\Tests\Psr7;
+namespace RingCentral\Tests\Psr7;
 
-use GuzzleHttp\Psr7\Response;
-use GuzzleHttp\Psr7;
+use RingCentral\Psr7\Response;
+use RingCentral\Psr7;
 
 /**
- * @covers GuzzleHttp\Psr7\MessageTrait
- * @covers GuzzleHttp\Psr7\Response
+ * @covers RingCentral\Psr7\MessageTrait
+ * @covers RingCentral\Psr7\Response
  */
 class ResponseTest extends \PHPUnit_Framework_TestCase
 {
@@ -139,7 +139,7 @@ class ResponseTest extends \PHPUnit_Framework_TestCase
 
     public function testBodyConsistent()
     {
-        $r = new Response(200, [], '0');
+        $r = new Response(200, array(), '0');
         $this->assertEquals('0', (string)$r->getBody());
     }
     

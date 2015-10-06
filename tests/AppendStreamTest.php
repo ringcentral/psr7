@@ -1,8 +1,8 @@
 <?php
-namespace GuzzleHttp\Tests\Psr7;
+namespace RingCentral\Tests\Psr7;
 
-use GuzzleHttp\Psr7\AppendStream;
-use GuzzleHttp\Psr7;
+use RingCentral\Psr7\AppendStream;
+use RingCentral\Psr7;
 
 class AppendStreamTest extends \PHPUnit_Framework_TestCase
 {

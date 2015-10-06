@@ -1,5 +1,5 @@
 <?php
-namespace GuzzleHttp\Psr7;
+namespace RingCentral\Psr7;
 
 use Psr\Http\Message\StreamInterface;
 

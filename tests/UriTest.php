@@ -1,10 +1,10 @@
 <?php
-namespace GuzzleHttp\Tests\Psr7;
+namespace RingCentral\Tests\Psr7;
 
-use GuzzleHttp\Psr7\Uri;
+use RingCentral\Psr7\Uri;
 
 /**
- * @covers GuzzleHttp\Psr7\Uri
+ * @covers RingCentral\Psr7\Uri
  */
 class UriTest extends \PHPUnit_Framework_TestCase
 {

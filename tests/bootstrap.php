@@ -1,5 +1,5 @@
 <?php
-namespace GuzzleHttp\Tests\Psr7;
+namespace RingCentral\Tests\Psr7;
 
 error_reporting(E_ALL);
 

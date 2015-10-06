@@ -1,11 +1,11 @@
 <?php
-namespace GuzzleHttp\Tests\Psr7;
+namespace RingCentral\Tests\Psr7;
 
-use GuzzleHttp\Psr7;
-use GuzzleHttp\Psr7\FnStream;
+use RingCentral\Psr7;
+use RingCentral\Psr7\FnStream;
 
 /**
- * @covers GuzzleHttp\Psr7\FnStream
+ * @covers RingCentral\Psr7\FnStream
  */
 class FnStreamTest extends \PHPUnit_Framework_TestCase
 {

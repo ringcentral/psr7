@@ -11,3 +11,11 @@ view-coverage:
 
 clean:
 	rm -rf artifacts/*
+
+.PHONY: docker-login
+docker-login:
+	docker run -t -i -v $(shell pwd):/opt/psr7 ringcentral-psr7 /bin/bash
+
+.PHONY: docker-build
+docker-build:
+	docker build -t ringcentral-psr7 .

@@ -1,8 +1,8 @@
 <?php
-namespace GuzzleHttp\Tests\Psr7;
+namespace RingCentral\Tests\Psr7;
 
-use GuzzleHttp\Psr7\BufferStream;
-use GuzzleHttp\Psr7\DroppingStream;
+use RingCentral\Psr7\BufferStream;
+use RingCentral\Psr7\DroppingStream;
 
 class DroppingStreamTest extends \PHPUnit_Framework_TestCase
 {

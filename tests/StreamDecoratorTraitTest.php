@@ -1,16 +1,16 @@
 <?php
-namespace GuzzleHttp\Tests\Psr7;
+namespace RingCentral\Tests\Psr7;
 
 use Psr\Http\Message\StreamInterface;
-use GuzzleHttp\Psr7;
-use GuzzleHttp\Psr7\StreamDecoratorTrait;
+use RingCentral\Psr7;
+use RingCentral\Psr7\StreamDecoratorTrait;
 
 class Str extends StreamDecoratorTrait implements StreamInterface
 {
 }
 
 /**
- * @covers GuzzleHttp\Psr7\StreamDecoratorTrait
+ * @covers RingCentral\Psr7\StreamDecoratorTrait
  */
 class StreamDecoratorTraitTest extends \PHPUnit_Framework_TestCase
 {

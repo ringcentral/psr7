@@ -1,11 +1,11 @@
 <?php
-namespace GuzzleHttp\Tests\Psr7;
+namespace RingCentral\Tests\Psr7;
 
-use GuzzleHttp\Psr7\NoSeekStream;
-use GuzzleHttp\Psr7\Stream;
+use RingCentral\Psr7\NoSeekStream;
+use RingCentral\Psr7\Stream;
 
 /**
- * @covers GuzzleHttp\Psr7\Stream
+ * @covers RingCentral\Psr7\Stream
  */
 class StreamTest extends \PHPUnit_Framework_TestCase
 {
@@ -156,7 +156,7 @@ class StreamTest extends \PHPUnit_Framework_TestCase
 
     public function testDoesNotThrowInToString()
     {
-        $s = \GuzzleHttp\Psr7\stream_for('foo');
+        $s = \RingCentral\Psr7\stream_for('foo');
         $s = new NoSeekStream($s);
         $this->assertEquals('foo', (string) $s);
     }
