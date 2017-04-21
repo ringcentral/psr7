@@ -473,6 +473,13 @@ Read a line from the stream up to the maximum allowed buffer length.
 Parses a request message string into a request object.
 
 
+## `function parse_server_request`
+
+`function parse_server_request($message, array $serverParams = array())`
+
+Parses a request message string into a server-side request object.
+
+
 ## `function parse_response`
 
 `function parse_response($message)`
