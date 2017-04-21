@@ -583,4 +583,22 @@ class FunctionsTest extends \PHPUnit_Framework_TestCase
         $this->assertNotSame($r1, $r2);
         $this->assertEquals('foo=bar', $r2->getUri()->getQuery());
     }
+
+    public function testServerRequestWithServerParams()
+    {
+        $requestString = "GET /abc HTTP/1.1\r\nHost: foo.com\r\n\r\n";
+        $request = Psr7\parse_server_request($requestString);
+
+        $this->assertEquals(array(), $request->getServerParams());
+    }
+
+    public function testServerRequestWithoutServerParams()
+    {
+        $requestString = "GET /abc HTTP/1.1\r\nHost: foo.com\r\n\r\n";
+        $serverParams = array('server_address' => '127.0.0.1', 'server_port' => 80);
+
+        $request = Psr7\parse_server_request($requestString, $serverParams);
+
+        $this->assertEquals(array('server_address' => '127.0.0.1', 'server_port' => 80), $request->getServerParams());
+    }
 }
