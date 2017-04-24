@@ -465,6 +465,29 @@ function parse_request($message)
 }
 
 /**
+ * Parses a request message string into a server request object.
+ *
+ * @param string $message Request message string.
+ * @param array $serverParams Server params that will be added to the
+ *                            ServerRequest object
+ *
+ * @return ServerRequest
+ */
+function parse_server_request($message, array $serverParams = array())
+{
+    $request = parse_request($message);
+
+    return new ServerRequest(
+        $request->getMethod(),
+        $request->getUri(),
+        $request->getHeaders(),
+        $request->getBody(),
+        $request->getProtocolVersion(),
+        $serverParams
+    );
+}
+
+/**
  * Parses a response message string into a response object.
  *
  * @param string $message Response message string.
