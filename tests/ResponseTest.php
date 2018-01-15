@@ -120,6 +120,14 @@ class ResponseTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('Bar, Baz', $r2->getHeaderLine('foo'));
     }
 
+    public function testNewInstanceWhenAddingHeaderArray()
+    {
+        $r = new Response(200, array('Foo' => 'Bar'));
+        $r2 = $r->withAddedHeader('Foo', array('Baz', 'Qux'));
+        $this->assertNotSame($r, $r2);
+        $this->assertEquals(array('Bar', 'Baz', 'Qux'), $r2->getHeader('foo'));
+    }
+
     public function testNewInstanceWhenAddingHeaderThatWasNotThereBefore()
     {
         $r = new Response(200, array('Foo' => 'Bar'));
@@ -142,5 +150,5 @@ class ResponseTest extends \PHPUnit_Framework_TestCase
         $r = new Response(200, array(), '0');
         $this->assertEquals('0', (string)$r->getBody());
     }
-    
+
 }

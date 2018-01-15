@@ -91,9 +91,18 @@ abstract class MessageTrait
             return $this->withHeader($header, $value);
         }
 
+        $header = trim($header);
+        $name = strtolower($header);
+
+        $value = (array) $value;
+        foreach ($value as &$v) {
+            $v = trim($v);
+        }
+
         $new = clone $this;
-        $new->headers[strtolower($header)][] = $value;
-        $new->headerLines[$header][] = $value;
+        $new->headers[$name] = array_merge($new->headers[$name], $value);
+        $new->headerLines[$header] = array_merge($new->headerLines[$header], $value);
+
         return $new;
     }
 
