@@ -497,7 +497,10 @@ function parse_server_request($message, array $serverParams = array())
 function parse_response($message)
 {
     $data = _parse_message($message);
-    if (!preg_match('/^HTTP\/.* [0-9]{3} .*/', $data['start-line'])) {
+    // According to https://tools.ietf.org/html/rfc7230#section-3.1.2 the space
+    // between status-code and reason-phrase is required. But browsers accept
+    // responses without space and reason as well.
+    if (!preg_match('/^HTTP\/.* [0-9]{3}( .*|$)/', $data['start-line'])) {
         throw new \InvalidArgumentException('Invalid response string');
     }
     $parts = explode(' ', $data['start-line'], 3);
