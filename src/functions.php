@@ -55,7 +55,7 @@ function uri_for($uri)
  */
 function stream_for($resource = '', array $options = array())
 {
-    return Utils::stream_for($uri, $options);
+    return Utils::stream_for($resource, $options);
 }
 
 /**
