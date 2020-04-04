@@ -120,7 +120,7 @@ function modify_request(RequestInterface $request, array $changes)
  */
 function rewind_body(MessageInterface $message)
 {
-    return rewind_body($message);
+    return Utils::rewind_body($message);
 }
 
 /**
@@ -137,7 +137,7 @@ function rewind_body(MessageInterface $message)
  */
 function try_fopen($filename, $mode)
 {
-    return try_fopen($filename, $mode);
+    return Utils::try_fopen($filename, $mode);
 }
 
 /**
