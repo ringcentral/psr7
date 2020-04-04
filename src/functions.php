@@ -152,7 +152,7 @@ function try_fopen($filename, $mode)
  */
 function copy_to_string(StreamInterface $stream, $maxLen = -1)
 {
-    return copy_to_string($stream, $maxLen);
+    return Utils::copy_to_string($stream, $maxLen);
 }
 
 /**
