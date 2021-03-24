@@ -71,7 +71,7 @@ class LimitStream extends StreamDecoratorTrait implements StreamInterface
     {
         if ($whence !== SEEK_SET || $offset < 0) {
             throw new \RuntimeException(sprintf(
-                'Cannot seek to offset % with whence %s',
+                'Cannot seek to offset %d with whence %s',
                 $offset,
                 $whence
             ));
